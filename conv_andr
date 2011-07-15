@@ -26,15 +26,3 @@ fi
 echo "convert -resize $2 "$1\$@" "$1converted/\$@"" > /tmp/conv_andr_tmp
 ls -1 $1 | grep -i JPG | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
 rm -f /tmp/conv_andr_tmp
-
-#IMAGES=$(ls $1 | grep -i JPG)
-
-#for IMG in $IMAGES
-#do
-    #IMG2=${IMG}c
-    #echo "convert -resize 480x320 $IMG $IMG2"
-
-#    convert -resize $2 $1$IMG $1converted/$IMG
-#    echo "converted $IMG"
-#done
-
