@@ -8,6 +8,7 @@ then
     echo "repn: Use conv_andr path_to_photos/ format number_of_threads"
     echo "where format - 480x320 or scaled"
     echo "Converted images will stored in path_to_photos/converted"
+    echo "If number_of_threads not entered then using all system processors"
     exit
 fi
 
@@ -18,7 +19,7 @@ fi
 
 if [ -z "$3" ]
 then
-    THREADS=1
+    THREADS=`cat /proc/cpuinfo | grep -c processor`
 else
     THREADS=$3
 fi
