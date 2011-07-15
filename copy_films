@@ -1,8 +1,23 @@
 #!/bin/bash
 
+if [ -z "$1" -o -z "$2" ]
+then
+    echo "copy_films: Format isn't correct!"
+    echo "copy_films: Use copy_films list_of_films destination_path iconv"
+    echo "where list_of_films - text file with films list"
+    echo "where destination_path - destination folder"
+    echo "where iconv - if present then ist_of_films will be converted from CP1251 to UTF8"
+    echo "Converted images will stored in path_to_photos/converted"
+    exit
+fi
+
+if [ -z "$3"]
+then
+    cat $1 | while read f; do ls "$f"; cp -r "$f" /media/Transcend/films/; done
+else
+    cat $1 | iconv -f CP1251 -t UTF8 | while read f; do ls "$f"; cp -r "$f" "$2"; done
+fi
+
 #cat $1 | while read f; do iconv -f cp1251 < $f > ../converted/$f; done
-
-cat $1 | while read f; do ls "$f"; cp -r "$f" /media/Transcend/films/; done
-
 #cat $1 | while read f; do ls "$f"; done
 #cat $1 | while read f; do echo $f; done
