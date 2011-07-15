@@ -17,12 +17,13 @@ then
     mkdir $1converted
 fi
 
-if [ -z "$3" ]
+if [[ -z "$3" || $3 == 0 ]]
 then
     THREADS=`cat /proc/cpuinfo | grep -c processor`
 else
     THREADS=$3
 fi
+echo $THREADS
 
 echo "convert -resize $2 "$1\$@" "$1converted/\$@"" > /tmp/conv_andr_tmp
 ls -1 $1 | grep -i JPG | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
