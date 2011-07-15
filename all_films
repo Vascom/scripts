@@ -1,0 +1,10 @@
+#!/bin/bash
+
+du -h --max-depth=2 /media/data_2tb1/Фильмы/* | cut -f 2 |
+grep -xv -E "/media/data_2tb1/Фильмы/0-9|/media/data_2tb1/Фильмы/[А-ЯЁ]" |
+sort > ~/films_0
+#cat ~/films_0 | grep
+
+du -h --max-depth=2 /media/data_2tb1/Фильмы\ отечественные/* | cut -f 2 | sort >> ~/films_0
+du -h --max-depth=2 /media/data_2tb1/Мультфильмы/* | cut -f 2 | sort >> ~/films_0
+cat ~/films_0 | cut -d "/" -f 4,5,6 | grep -E * > ~/films_1

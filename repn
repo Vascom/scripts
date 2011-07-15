@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ -z "$1" -o -z "$2" -o -z "$3" ]
+then
+    echo "repn: Format isn't correct!"
+    echo "repn: Use repn N1 N2 file"
+    echo "repn: where N1 - the first number in file"
+    echo "repn:       N2 - the final number"
+    exit
+fi
+
+if [ -f $3 ]
+then :
+else
+    echo "File $3 doesn't exist"
+    exit
+fi
+
+PAR=$1
+MAX=$2
+
+cp $3 tmpr1.txt
+
+while [ $PAR -lt $MAX ]
+do
+    PAR1=`expr $PAR + 1`
+    sed s/_$PAR/_$PAR1/g tmpr1.txt > tmpr2.txt
+    sed s/__$PAR/__$PAR1/g tmpr2.txt > tmpr1.txt
+    PAR=$PAR1
+    cat tmpr1.txt >> tmpr3.txt
+done
+sed s/__//g tmpr3.txt > test.txt
+rm tmpr3.txt tmpr2.txt tmpr1.txt

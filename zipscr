@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#f_list=ls
+#for fn in *[fb2]
+#do
+#    zip -9 "$fn.zip" "$fn"
+    #gzip -9 "$fn"
+    #rm -f "$fn"
+#echo $fn
+#done
+#FN=$(basename "$@" .fb2)
+FN="$@"
+
+gzip -9 "$FN"
+#echo "$FN"
+#echo 1

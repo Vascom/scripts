@@ -1,0 +1,12 @@
+#!/bin/bash
+
+scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/rtl/* ~/p_rtl/
+du -hs ~/p_rtl
+find ~/p_rtl/ -name ".svn" -exec rm -rf {} \; 2>/dev/null
+find ~/p_rtl/ -name "work" -exec rm -rf {} \; 2>/dev/null
+find ~/p_rtl/ -name "Makefile*" -delete
+find ~/p_rtl/ -name "*~" -delete
+find ~/p_rtl/ -name "*.bak" -delete
+find ~/p_rtl/ -name "config.makefile" -delete
+du -hs ~/p_rtl
+cp -ru ~/p_rtl/* ~/unenc/triumph2/rtl/

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#This script resize big images for my Android device
+
+if [ -z "$1" -o -z "$2" ]
+then
+    echo "repn: Format isn't correct!"
+    echo "repn: Use conv_andr path_to_photos/ format number_of_threads"
+    echo "where format - 480x320 or scaled"
+    exit
+fi
+
+if [ ! -e $1converted ]
+then
+    mkdir $1converted
+fi
+
+if [ -z "$3" ]
+then
+    THREADS=1
+else
+    THREADS=$3
+fi
+
+echo "convert -resize $2 "$1\$@" "$1converted/\$@"" > /tmp/conv_andr_tmp
+ls -1 $1 | grep -i JPG | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
+rm -f /tmp/conv_andr_tmp
+
+#IMAGES=$(ls $1 | grep -i JPG)
+
+#for IMG in $IMAGES
+#do
+    #IMG2=${IMG}c
+    #echo "convert -resize 480x320 $IMG $IMG2"
+
+#    convert -resize $2 $1$IMG $1converted/$IMG
+#    echo "converted $IMG"
+#done
+

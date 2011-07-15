@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#cat $1 | while read f; do iconv -f cp1251 < $f > ../converted/$f; done
+
+cat $1 | while read f; do ls "$f"; cp -r "$f" /media/Transcend/films/; done
+
+#cat $1 | while read f; do ls "$f"; done
+#cat $1 | while read f; do echo $f; done
