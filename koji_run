@@ -3,17 +3,37 @@
 if [ -z "$1" -o -z "$2" ]
 then
     echo "Format isn't correct!"
-    echo "Use koji_run project_name commit_number dist_number"
-    echo "If dist_number not entered then using 15"
+    echo "Use koji_run project_name commit_number first_dist_number second_dist_number"
+    echo "second_dist_number is optional"
     exit
 fi
 
-if [[ -z "$3" || $3 == 0 ]]
+if [ "$1" = "regen" ]
 then
-    DIST_NUMBER=15
-else
-    DIST_NUMBER=$3
+    if [ "$2" = "all" ]
+    then
+        koji regen-repo dist-rfr15-build
+        koji regen-repo dist-rfr14-build
+    else
+        koji regen-repo dist-rfr$2-build
+    fi
+    exit
 fi
 
-koji build dist-rfr$DIST_NUMBER git://github.com/RussianFedora/$1.git?#$2
-
+if [[ -z "$4" || "$4" -le "0" ]]
+then
+    if [[ -z "$3" || "$3" -le "0" ]]
+    then
+        echo "Need first DIST_NUMBER"
+    else
+        koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$2
+    fi
+else
+    if [[ -z "$3" || "$3" -le "0" ]]
+    then
+        echo "Need first DIST_NUMBER"
+    else
+        koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
+        koji build dist-rfr$4 git://github.com/RussianFedora/$1.git?#$2 &>/dev/null
+    fi
+fi
