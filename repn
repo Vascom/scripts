@@ -19,15 +19,14 @@ fi
 PAR=$1
 MAX=$2
 
-cp $3 tmpr1.txt
+#cp $3 tmpr1.txt
 
-while [ $PAR -lt $MAX ]
+while [ $PAR -le $MAX ]
 do
-    PAR1=`expr $PAR + 1`
-    sed s/_$PAR/_$PAR1/g tmpr1.txt > tmpr2.txt
-    sed s/__$PAR/__$PAR1/g tmpr2.txt > tmpr1.txt
-    PAR=$PAR1
-    cat tmpr1.txt >> tmpr3.txt
+    sed s/NUM/_$PAR/g $3 > tmpr1.txt
+    PAR=`expr $PAR + 1`
+    cat tmpr1.txt >> tmpr2.txt
 done
-sed s/__//g tmpr3.txt > test.txt
-rm tmpr3.txt tmpr2.txt tmpr1.txt
+mv tmpr2.txt test.txt
+#sed s/__//g tmpr3.txt > test.txt
+rm tmpr1.txt
