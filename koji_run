@@ -5,6 +5,7 @@ then
     echo "Format isn't correct!"
     echo "Use koji_run project_name commit_number first_dist_number second_dist_number"
     echo "second_dist_number is optional"
+    echo "Use koji_run regen all|number for repos regen"
     exit
 fi
 
@@ -17,7 +18,7 @@ then
     else
         koji regen-repo dist-rfr$2-build
     fi
-    exit
+    exit 0
 fi
 
 if [[ -z "$4" || "$4" -le "0" ]]
