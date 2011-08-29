@@ -23,7 +23,7 @@ then
 else
     THREADS=$3
 fi
-echo $THREADS
+echo "Using $THREADS processors"
 
 echo "convert -resize $2 "$1\$@" "$1converted/\$@"" > /tmp/conv_andr_tmp
 ls -1 $1 | grep -i JPG | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
