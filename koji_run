@@ -11,7 +11,7 @@ fi
 
 if [ "$4" = "quiet" ]
 then
-    QUIET="& &>/dev/null"
+    QUIET="&>/dev/null &"
 fi
 
 if [ "$1" = "regen" ]

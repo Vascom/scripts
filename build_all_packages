@@ -2,7 +2,7 @@
 
 TEMP_FILE="/tmp/buid_all__list.tmp"
 SEQ="3 4 5"
-NUMBER_LINES=`cat $1 | grep -E "*" -c`
+NUMBER_LINES=`cat $1 | head -n 1 | cut -d "," -f1`
 TEMP_LINE=`cat $1 | head -n $NUMBER_LINES | tail -n +2`
 
 for n in $TEMP_LINE
@@ -15,7 +15,7 @@ do
             NAME=`echo $n | cut -d "," -f1`
             REV=`echo $n | cut -d "," -f2`
             BUILD=`expr $k + 11`
-            echo "./koji_run $NAME $REV $BUILD"
+            echo "./koji_run $NAME $REV $BUILD quiet"
         fi
     done
 done
