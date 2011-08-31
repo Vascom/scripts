@@ -1,0 +1,21 @@
+#!/bin/bash
+
+TEMP_FILE="/tmp/buid_all__list.tmp"
+SEQ="3 4 5"
+NUMBER_LINES=`cat $1 | grep -E "*" -c`
+TEMP_LINE=`cat $1 | head -n $NUMBER_LINES | tail -n +2`
+
+for n in $TEMP_LINE
+do
+    for k in $SEQ
+    do
+        STATE=`echo $n | cut -d "," -f$k`
+        if [ "$STATE" = "-" ]
+        then
+            NAME=`echo $n | cut -d "," -f1`
+            REV=`echo $n | cut -d "," -f2`
+            BUILD=`expr $k + 11`
+            echo "./koji_run $NAME $REV $BUILD"
+        fi
+    done
+done

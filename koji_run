@@ -9,6 +9,11 @@ then
     exit
 fi
 
+if [ "$4" = "quiet" ]
+then
+    QUIET="& &>/dev/null"
+fi
+
 if [ "$1" = "regen" ]
 then
     if [ "$2" = "all" ]
@@ -16,8 +21,24 @@ then
         koji regen-repo dist-rfr15-build
         koji regen-repo dist-rfr14-build
     else
-        koji regen-repo dist-rfr$2-build
+        if [ "$2" = "alpha" ]
+        then
+            koji regen-repo dist-rfr-alpha16-build
+        else
+            koji regen-repo dist-rfr$2-build
+        fi
     fi
+    exit 0
+fi
+
+if [ "$3" = "alpha" ]
+then
+    #if [[ -z "$3" || "$3" -le "0" ]]
+    #then
+    #    echo "Need first DIST_NUMBER"
+    #else
+        koji build dist-rfr-alpha16 git://github.com/RussianFedora/$1.git?#$2
+    #fi
     exit 0
 fi
 
@@ -27,7 +48,12 @@ then
     then
         echo "Need first DIST_NUMBER"
     else
-        koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$2
+        if [ "$3" = "16" ]
+        then
+            koji build dist-rfr-alpha16 git://github.com/RussianFedora/$1.git?#$2 $QUIET
+        else
+            koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$ $QUIET
+        fi
     fi
 else
     if [[ -z "$3" || "$3" -le "0" ]]
