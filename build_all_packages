@@ -1,7 +1,6 @@
 #!/bin/bash
 
-TEMP_FILE="/tmp/buid_all__list.tmp"
-SEQ="3 4 5"
+SEQ="4 5 6"
 NUMBER_LINES=`cat $1 | head -n 1 | cut -d "," -f1`
 TEMP_LINE=`cat $1 | head -n $NUMBER_LINES | tail -n +2`
 
@@ -13,9 +12,9 @@ do
         if [ "$STATE" = "-" ]
         then
             NAME=`echo $n | cut -d "," -f1`
-            REV=`echo $n | cut -d "," -f2`
-            BUILD=`expr $k + 11`
-            echo "./koji_run $NAME $REV $BUILD quiet"
+            REV=`echo $n | cut -d "," -f3`
+            BUILD=`expr $k + 10`
+            ./koji_run $NAME $REV $BUILD quiet
         fi
     done
 done

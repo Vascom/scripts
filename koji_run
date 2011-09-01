@@ -9,9 +9,11 @@ then
     exit
 fi
 
-if [ "$4" = "quiet" ]
+if [ "$3" = "16" ]
 then
-    QUIET="&>/dev/null &"
+    DIST="-alpha$3"
+else
+    DIST="$3"
 fi
 
 if [ "$1" = "regen" ]
@@ -42,18 +44,13 @@ then
     exit 0
 fi
 
-if [[ -z "$4" || "$4" -le "0" ]]
+if [[ -z "$4" || "$4" -le "0" || "$4" = "quiet" ]]
 then
     if [[ -z "$3" || "$3" -le "0" ]]
     then
         echo "Need first DIST_NUMBER"
     else
-        if [ "$3" = "16" ]
-        then
-            koji build dist-rfr-alpha16 git://github.com/RussianFedora/$1.git?#$2 $QUIET
-        else
-            koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$ $QUIET
-        fi
+        koji build dist-rfr$DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
     fi
 else
     if [[ -z "$3" || "$3" -le "0" ]]
