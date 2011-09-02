@@ -3,9 +3,8 @@
 if [ -z "$1" -o -z "$2" ]
 then
     echo "Format isn't correct!"
-    echo "Use koji_run project_name commit_number first_dist_number second_dist_number"
-    echo "second_dist_number is optional"
-    echo "Use koji_run regen all|number for repos regen"
+    echo "Use koji_run project_name commit_number dist_number"
+    echo "Use koji_run regen number for repos regen"
     exit
 fi
 
@@ -18,29 +17,7 @@ fi
 
 if [ "$1" = "regen" ]
 then
-    if [ "$2" = "all" ]
-    then
-        koji regen-repo dist-rfr15-build
-        koji regen-repo dist-rfr14-build
-    else
-        if [ "$2" = "alpha" ]
-        then
-            koji regen-repo dist-rfr-alpha16-build
-        else
-            koji regen-repo dist-rfr$2-build
-        fi
-    fi
-    exit 0
-fi
-
-if [ "$3" = "alpha" ]
-then
-    #if [[ -z "$3" || "$3" -le "0" ]]
-    #then
-    #    echo "Need first DIST_NUMBER"
-    #else
-        koji build dist-rfr-alpha16 git://github.com/RussianFedora/$1.git?#$2
-    #fi
+    koji regen-repo dist-rfr$DIST-build
     exit 0
 fi
 
@@ -51,13 +28,5 @@ then
         echo "Need first DIST_NUMBER"
     else
         koji build dist-rfr$DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
-    fi
-else
-    if [[ -z "$3" || "$3" -le "0" ]]
-    then
-        echo "Need first DIST_NUMBER"
-    else
-        koji build dist-rfr$3 git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
-        koji build dist-rfr$4 git://github.com/RussianFedora/$1.git?#$2 &>/dev/null
     fi
 fi
