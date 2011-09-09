@@ -1,9 +1,10 @@
-all_films        - make films list from my hard disks
-conv_andr        - resize number of images with multiprocessing
-copy_films       - copy some films from my collection to other devices
-koji_run         - run koji build process
-mail.sh          - send email via script when computer start
-repn             - make many copies of text with variables
-rtl_clean_backup - make backup of work files
-rtorrent.sh      - start screen session with rtorrent at startup
-zipscr           - zip number of files (books for bookreader)
+all_films            - make films list from my hard disks
+conv_andr            - resize number of images with multiprocessing
+copy_films           - copy some films from my collection to other devices
+films_descriptions   - download information about my films and parce it to table
+koji_run             - run koji build process
+mail.sh              - send email via script when computer start
+repn                 - make many copies of text with variables
+rtl_clean_backup     - make backup of work files
+rtorrent.sh          - start screen session with rtorrent at startup
+zipscr               - zip number of files (books for bookreader)
