@@ -3,8 +3,6 @@
 if [ -z "$1" -o -z "$2" ]
 then
     echo "Format isn't correct!"
-    echo "Use koji_run project_name commit_number dist_number"
-    echo "Use koji_run regen number for repos regen"
     exit
 fi
 
@@ -40,16 +38,18 @@ do
     YEAR=`echo $LINE_44 | cut -d "," -f2`
     if [ "$YEAR" = " The" ]
     then
+        NAME_EN="$NAME_EN,$YEAR"
         YEAR=`echo $LINE_44 | cut -d "," -f3`
         DURATION=`echo $LINE_44 | cut -d "," -f4`
     else
         DURATION=`echo $LINE_44 | cut -d "," -f3`
     fi
     GENRE=`cat /tmp/index2.html | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+    COUNTRY=`cat /tmp/index2.html | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
     DESCR=`cat /tmp/index2.html | head -n 60 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
     PICT="~/Dropbox/films_images/$NUMBER.jpg"
     #GENRE=`echo $GENRE | sed 's|,||g'`
 
-    echo "$FILM;$URL;$YEAR;$DURATION;$GENRE;$DESCR;$PICT" >> films_full.csv
+    echo "$FILM;$URL;$YEAR;$DURATION;$GENRE;$NAME_EN;$COUNTRY;$DESCR;$PICT" >> films_full.csv
 
 done
