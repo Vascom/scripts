@@ -10,17 +10,29 @@ fi
 
 USER_AGENT="Mozilla/5.0 (Windows; U; Windows NT 5.1; AppleWebKit/534.1 (KHTML, like Gecko) Chrome/6.0.437.3 Safari/534.1"
 
-cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
+#cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
+cat $1 > /tmp/init_list_fd
 cat $2 > /tmp/init_list_full_fd
 
-echo $INIT_LIST_FULL
+rm -f films_full.csv
+echo "Название;ВЭБ;Дата;Длительность;Жанр;Описание;Картинка" > films_full.csv
 cat /tmp/init_list_fd | while read FILM 
 do 
     URL=`cat /tmp/init_list_full_fd | grep -m 1 "$FILM" | cut -d "," -f2`
     NUMBER=`echo $URL | cut -d "/" -f7`
 
-    wget -q -O /tmp/index.html -U "$USER_AGENT" http://m.kinopoisk.ru/movie/$NUMBER/
-    iconv -f cp1251 -t utf8 /tmp/index.html > /tmp/index2.html
+    if [ -e ~/Dropbox/films_about/$NUMBER.html ]
+    then
+        iconv -f cp1251 -t utf8 ~/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
+    else
+        wget -q -O ~/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" http://m.kinopoisk.ru/movie/$NUMBER/
+        iconv -f cp1251 -t utf8 ~/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
+    fi
+
+    if [ ! -e ~/Dropbox/films_images/$NUMBER.jpg ]
+    then
+        wget -q -O ~/Dropbox/films_images/$NUMBER.jpg -U "$USER_AGENT" http://st.kinopoisk.ru/images/film/$NUMBER.jpg
+    fi
 
     NAME_RU=`cat /tmp/index2.html | head -n 43 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
     LINE_44=`cat /tmp/index2.html | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
@@ -34,8 +46,10 @@ do
         DURATION=`echo $LINE_44 | cut -d "," -f3`
     fi
     GENRE=`cat /tmp/index2.html | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-    GENRE=`echo $GENRE | sed 's|,||g'`
+    DESCR=`cat /tmp/index2.html | head -n 60 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+    PICT="~/Dropbox/films_images/$NUMBER.jpg"
+    #GENRE=`echo $GENRE | sed 's|,||g'`
 
-    echo "$FILM,$URL,$GENRE,$YEAR"
+    echo "$FILM;$URL;$YEAR;$DURATION;$GENRE;$DESCR;$PICT" >> films_full.csv
+
 done
-rm -f /tmp/init_list_full_fd /tmp/index.html /tmp/index2.html
