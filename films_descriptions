@@ -9,65 +9,70 @@ fi
 USER_AGENT="Mozilla/5.0 (Windows; U; Windows NT 5.1; AppleWebKit/534.1 (KHTML, like Gecko) Chrome/6.0.437.3 Safari/534.1"
 
 #cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
-cat $1 > /tmp/init_list_fd
-cat $2 > /tmp/init_list_full_fd
+cp "$1" /tmp/init_list_fd
+cp "$2" /tmp/init_list_full_fd
+
+FILMS=`cat /tmp/init_list_fd | grep -c -E "*"`
+FILMS_I=0
+function print_progress() {
+    FILMS_I=`expr $FILMS_I + 100`
+    PROGRESS=`expr $FILMS_I / $FILMS` 
+    echo -en "\rProgress: $PROGRESS%"
+}
 
 rm -f films_full.csv
-echo "Название;ВЭБ;Дата;Длительность;Жанр;Оригинальный заголовок;Страна;Описание;Картинка" > films_full.csv
+echo "Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание|Картинка" > films_full.csv
 cat /tmp/init_list_fd | while read FILM 
 do 
+    print_progress
     URL=`cat /tmp/init_list_full_fd | grep -m 1 "$FILM" | cut -d "," -f2`
     NUMBER=`echo $URL | cut -d "/" -f7`
 
-    if [ -e ~/Dropbox/films_about/$NUMBER.html ]
+    if [ ! -e $HOME/Dropbox/films_about/$NUMBER.html ]
     then
-        iconv -f cp1251 -t utf8 ~/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
-    else
-        wget -q -O ~/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" http://m.kinopoisk.ru/movie/$NUMBER/
-        iconv -f cp1251 -t utf8 ~/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
+        wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
+        http://m.kinopoisk.ru/movie/$NUMBER/
+        iconv -f cp1251 -t utf8 $HOME/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
+        mv /tmp/index2.html $HOME/Dropbox/films_about/$NUMBER.html
+        echo "Film $FILM downloaded"
     fi
 
-    if [ ! -e ~/Dropbox/films_images/$NUMBER.jpg ]
+    if [ ! -e $HOME/Dropbox/films_images/$NUMBER.jpg ]
     then
-        wget -q -O ~/Dropbox/films_images/$NUMBER.jpg -U "$USER_AGENT" http://st.kinopoisk.ru/images/film/$NUMBER.jpg
+        wget -q -O $HOME/Dropbox/films_images/$NUMBER.jpg -U "$USER_AGENT" \
+        http://st.kinopoisk.ru/images/film/$NUMBER.jpg
     fi
 
-    NAME_RU=`cat /tmp/index2.html | head -n 43 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-    if [ "$NUMBER" = "61805" ] 
-    then
-        LINE_44="Mädchen Mädchen, 2001, 90 мин"
-    elif [ "$NUMBER" = "63907" ] 
-    then
-        LINE_44="Mädchen Mädchen 2 - Loft oder Liebe, 2004, 88 мин."
-    else
-        LINE_44=`cat /tmp/index2.html | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-    fi
+    FILE_ABOUT="$HOME/Dropbox/films_about/$NUMBER.html"
+    NAME_RU=`cat "$FILE_ABOUT" | head -n 43 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+    LINE_44=`cat $FILE_ABOUT | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
 
-    NAME_EN=`echo $LINE_44 | cut -d "," -f1`
-    YEAR=`echo $LINE_44 | cut -d "," -f2`
-    if [[ "$YEAR" = " The" || "$YEAR" = "White \& Blonde" || "$YEAR" = " Le" || "$YEAR" = " La" || "$YEAR" = " Man" ]]
-    then
-        NAME_EN="$NAME_EN,$YEAR"
-        YEAR=`echo $LINE_44 | cut -d "," -f3`
-        DURATION=`echo $LINE_44 | cut -d "," -f4`
-    else
-        DURATION=`echo $LINE_44 | cut -d "," -f3`
-    fi
+    GENRE=`cat $FILE_ABOUT | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+    COUNTRY=`cat $FILE_ABOUT | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+    DESCR=`cat $FILE_ABOUT | grep descr | cut -d ">" -f2 | cut -d "<" -f1`
+    PICT="$HOME/Dropbox/films_images/$NUMBER.jpg"
+    #GENRE=`echo $GENRE | sed 's|,||g'`
+    RUSSIA=`echo $COUNTRY | grep -c -E "Россия|СССР|Украина|Беларусь"`
 
-    if [ ! -n "$NAME_EN" ]
+    if [[ "$RUSSIA" -ne "0" ]]
     then
         NAME_EN="$NAME_RU"
         YEAR=`echo $LINE_44 | cut -d "," -f1`
         DURATION=`echo $LINE_44 | cut -d "," -f2`
+    else
+        NAME_EN=`echo $LINE_44 | cut -d "," -f1`
+        YEAR=`echo $LINE_44 | cut -d "," -f2`
+        if [[ "$YEAR" = " The" || "$YEAR" = " Le" \
+            || "$YEAR" = " La" || "$YEAR" = " Man" || "$YEAR" = " Robot" ]] 
+        then
+            NAME_EN="$NAME_EN,$YEAR"
+            YEAR=`echo $LINE_44 | cut -d "," -f3`
+            DURATION=`echo $LINE_44 | cut -d "," -f4`
+        else
+            DURATION=`echo $LINE_44 | cut -d "," -f3`
+        fi
     fi
 
-    GENRE=`cat /tmp/index2.html | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-    COUNTRY=`cat /tmp/index2.html | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-    DESCR=`cat /tmp/index2.html | grep descr | cut -d ">" -f2 | cut -d "<" -f1`
-    DESCR=`echo $DESCR | sed 's|\n||g'`
-    PICT="~/Dropbox/films_images/$NUMBER.jpg"
-    #GENRE=`echo $GENRE | sed 's|,||g'`
-
-    echo "$FILM|$URL|$YEAR|$DURATION|$GENRE|$NAME_EN|$COUNTRY|$DESCR|$PICT" >> films_full.csv
+    echo "$FILM|$URL|$YEAR|$DURATION|$GENRE|$COUNTRY|$NAME_EN|$DESCR|$PICT" >> films_full.csv
 
 done

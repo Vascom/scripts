@@ -13,7 +13,11 @@ fi
 
 if [ -z "$3"]
 then
-    cat $1 | while read f; do ls "$f"; cp -ru "$f" "$2"; done
+    cat $1 | while read f
+    do
+        echo -en "\r$f"
+        cp -ru "$f" "$2"
+    done
 else
     cat $1 | iconv -f CP1251 -t UTF8 | while read f; do ls "$f"; cp -r "$f" "$2"; done
 fi
