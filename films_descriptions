@@ -29,7 +29,8 @@ do
     URL=`echo "$STRING" | cut -d "$DELIM" -f2`
     NUMBER=`echo $URL | cut -d "/" -f7`
     DATA_EXIST=`echo "$STRING" | cut -d "$DELIM" -f3`
-
+    #echo "$FILM"
+    #echo "$STRING"
     if [[ "$3" == "update" || "$DATA_EXIST" == "" ]]
     then
         if [ ! -e $HOME/Dropbox/films_about/$NUMBER.html ]
@@ -49,11 +50,11 @@ do
 
         FILE_ABOUT="$HOME/Dropbox/films_about/$NUMBER.html"
         NAME_RU=`cat "$FILE_ABOUT" | head -n 43 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        LINE_44=`cat $FILE_ABOUT | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        LINE_44=`cat "$FILE_ABOUT" | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
 
-        GENRE=`cat $FILE_ABOUT | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        COUNTRY=`cat $FILE_ABOUT | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        DESCR=`cat $FILE_ABOUT | grep descr | cut -d ">" -f2 | cut -d "<" -f1`
+        GENRE=`cat "$FILE_ABOUT" | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        COUNTRY=`cat "$FILE_ABOUT" | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        DESCR=`cat "$FILE_ABOUT" | grep descr | cut -d ">" -f2 | cut -d "<" -f1`
         PICT="$HOME/Dropbox/films_images/$NUMBER.jpg"
         #GENRE=`echo $GENRE | sed 's|,||g'`
         RUSSIA=`echo $COUNTRY | grep -c -E "Россия|СССР|Украина|Беларусь"`
