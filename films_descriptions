@@ -10,9 +10,9 @@ fi
 USER_AGENT="Mozilla/5.0 (Windows; U; Windows NT 5.1; AppleWebKit/534.1 (KHTML, like Gecko) Chrome/6.0.437.3 Safari/534.1"
 
 #cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
-DELIM=`cat "$2" | grep -m 1 2012 | cut -c 16`
+DELIM=`grep -m 1 "2012" "$2" | cut -c 16`
 
-FILMS=`cat $1 | grep -c -E "*"`
+FILMS=`grep -c -E "*" "$1"`
 FILMS_I=0
 function print_progress() {
     FILMS_I=`expr $FILMS_I + 100`
@@ -20,12 +20,11 @@ function print_progress() {
     echo -en "\rProgress: $PROGRESS%"
 }
 
-rm -f films_full.csv
-echo "Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание|Картинка" > films_full.csv
+echo "Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание|Картинка" > /tmp/films_full.csv
 cat $1 | while read FILM 
 do 
     print_progress
-    STRING=`cat "$2" | grep -m 1 "$FILM"`
+    STRING=`grep -m 1 "$FILM" "$2"`
     URL=`echo "$STRING" | cut -d "$DELIM" -f2`
     NUMBER=`echo $URL | cut -d "/" -f7`
     DATA_EXIST=`echo "$STRING" | cut -d "$DELIM" -f3`
@@ -49,12 +48,12 @@ do
         fi
 
         FILE_ABOUT="$HOME/Dropbox/films_about/$NUMBER.html"
-        NAME_RU=`cat "$FILE_ABOUT" | head -n 43 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        LINE_44=`cat "$FILE_ABOUT" | head -n 44 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        NAME_RU=`head -n 43 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        LINE_44=`head -n 44 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
 
-        GENRE=`cat "$FILE_ABOUT" | head -n 48 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        COUNTRY=`cat "$FILE_ABOUT" | head -n 49 | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        DESCR=`cat "$FILE_ABOUT" | grep descr | cut -d ">" -f2 | cut -d "<" -f1`
+        GENRE=`head -n 48 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        COUNTRY=`head -n 49 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        DESCR=`grep "descr" "$FILE_ABOUT" | cut -d ">" -f2 | cut -d "<" -f1`
         PICT="$HOME/Dropbox/films_images/$NUMBER.jpg"
         #GENRE=`echo $GENRE | sed 's|,||g'`
         RUSSIA=`echo $COUNTRY | grep -c -E "Россия|СССР|Украина|Беларусь"`
@@ -78,8 +77,9 @@ do
             fi
         fi
 
-        echo "$FILM|$URL|$YEAR|$DURATION|$GENRE|$COUNTRY|$NAME_EN|$DESCR|$PICT" >> films_full.csv
+        echo "$FILM|$URL|$YEAR|$DURATION|$GENRE|$COUNTRY|$NAME_EN|$DESCR|$PICT" >> /tmp/films_full.csv
     else
-        echo "$STRING" >> films_full.csv
+        echo "$STRING" >> /tmp/films_full.csv
     fi
 done
+mv /tmp/films_full.csv films_full.csv
