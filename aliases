@@ -1,0 +1,5 @@
+alias ll='ls -lah --color=auto'
+alias yupdate='sudo yum update'
+alias yinstall='sudo yum install'
+alias yremove='sudo yum remove'
+alias yclean='sudo yum clean all'

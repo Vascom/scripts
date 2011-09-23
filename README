@@ -1,3 +1,4 @@
+aliases              - list of useful aliases
 all_films            - make films list from my hard disks
 conv_andr            - resize number of images with multiprocessing
 copy_films           - copy some films from my collection to other devices
