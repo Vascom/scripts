@@ -15,18 +15,20 @@ else
     DIST="$3"
 fi
 
+if [ "$4" = "test" ]
+then
+    TEST="--scratch"
+fi
+
 if [ "$1" = "regen" ]
 then
     koji regen-repo dist-rfr$DIST-build
     exit 0
 fi
 
-if [[ -z "$4" || "$4" -le "0" || "$4" = "quiet" ]]
+if [[ -z "$3" || "$3" -le "0" ]]
 then
-    if [[ -z "$3" || "$3" -le "0" ]]
-    then
-        echo "Need first DIST_NUMBER"
-    else
-        koji build dist-rfr$DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
-    fi
+    echo "Need first DIST_NUMBER"
+else
+    koji build $TEST dist-rfr$DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
 fi

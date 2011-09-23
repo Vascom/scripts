@@ -11,10 +11,21 @@ do
         STATE=`echo $n | cut -d "," -f$k`
         NAME=`echo $n | cut -d "," -f1`
         BUILD=`expr $k + 10`
-        if [ "$STATE" = "-" ]
+        if [[ "$STATE" = "-" && "$2" != "repo" ]]
         then
             REV=`echo $n | cut -d "," -f3`
-            ./koji_run $NAME $REV $BUILD quiet
+            SCRATCH=`echo $n | cut -d "," -f10`
+            if [[ "$SCRATCH" = "-" || "$2" = "test" ]]
+            then
+                TEST="test"
+            else
+                TEST=""
+            fi
+
+            echo "Building $NAME $BUILD"
+            ./koji_run $NAME $REV $BUILD $TEST
+            sleep 5
+
         elif [[ ("$STATE" = '+' || "$STATE" = 'b+') && "$2" = "repo"  ]]
         then
             REPONUM=`expr $k + 3`
