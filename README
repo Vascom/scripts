@@ -1,5 +1,6 @@
 aliases              - list of useful aliases
 all_films            - make films list from my hard disks
+build_all_packages   - scrips for auto-build packages in koji
 conv_andr            - resize number of images with multiprocessing
 copy_films           - copy some films from my collection to other devices
 films_descriptions   - download information about my films and parce it to table
