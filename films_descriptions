@@ -16,13 +16,34 @@ FILMS=`grep -c -E "*" "$1"`
 FILMS_I=0
 function print_progress() {
     FILMS_I=`expr $FILMS_I + 100`
-    PROGRESS=`expr $FILMS_I / $FILMS` 
-    echo -en "\rProgress: $PROGRESS%"
+    PROGRESS=`expr $FILMS_I / $FILMS`
+    echo -en "\rProgress: $PROGRESS% "
+}
+
+function file_download() {
+    if [ ! -e $HOME/Dropbox/films_about/$NUMBER.html ]
+    then
+        wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
+        http://m.kinopoisk.ru/movie/$NUMBER/
+        iconv -f cp1251 -t utf8 $HOME/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
+        mv /tmp/index2.html $HOME/Dropbox/films_about/$NUMBER.html
+        echo "Film $FILM downloaded"
+    fi
+
+    if [ ! -e $HOME/Dropbox/films_images/$NUMBER.jpg ]
+    then
+        wget -q -O $HOME/Dropbox/films_images/$NUMBER.jpg -U "$USER_AGENT" \
+        http://st.kinopoisk.ru/images/film/$NUMBER.jpg
+    fi
+}
+
+function html_parsing() {
+    head -n $1 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1
 }
 
 echo "Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание|Картинка" > /tmp/films_full.csv
-cat $1 | while read FILM 
-do 
+cat $1 | while read FILM
+do
     print_progress
     STRING=`grep -m 1 "$FILM" "$2"`
     URL=`echo "$STRING" | cut -d "$DELIM" -f2`
@@ -32,27 +53,14 @@ do
     #echo "$STRING"
     if [[ "$3" == "update" || "$DATA_EXIST" == "" ]]
     then
-        if [ ! -e $HOME/Dropbox/films_about/$NUMBER.html ]
-        then
-            wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
-            http://m.kinopoisk.ru/movie/$NUMBER/
-            iconv -f cp1251 -t utf8 $HOME/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
-            mv /tmp/index2.html $HOME/Dropbox/films_about/$NUMBER.html
-            echo "Film $FILM downloaded"
-        fi
-
-        if [ ! -e $HOME/Dropbox/films_images/$NUMBER.jpg ]
-        then
-            wget -q -O $HOME/Dropbox/films_images/$NUMBER.jpg -U "$USER_AGENT" \
-            http://st.kinopoisk.ru/images/film/$NUMBER.jpg
-        fi
+        file_download
 
         FILE_ABOUT="$HOME/Dropbox/films_about/$NUMBER.html"
-        NAME_RU=`head -n 43 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        LINE_44=`head -n 44 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        NAME_RU=`html_parsing 43`
+        LINE_44=`html_parsing 44`
 
-        GENRE=`head -n 48 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
-        COUNTRY=`head -n 49 "$FILE_ABOUT" | tail -n 1 | cut -d ">" -f2 | cut -d "<" -f1`
+        GENRE=`html_parsing 48`
+        COUNTRY=`html_parsing 49`
         DESCR=`grep "descr" "$FILE_ABOUT" | cut -d ">" -f2 | cut -d "<" -f1`
         PICT="$HOME/Dropbox/films_images/$NUMBER.jpg"
         #GENRE=`echo $GENRE | sed 's|,||g'`
@@ -82,4 +90,4 @@ do
         echo "$STRING" >> /tmp/films_full.csv
     fi
 done
-mv /tmp/films_full.csv films_full.csv
+mv /tmp/films_full.csv films_full2.csv
