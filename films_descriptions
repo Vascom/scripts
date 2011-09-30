@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [ -z "$1" -o -z "$2" ]
+if [ -z "$1" -o -z "$2" -o -z "$3" ]
 then
     echo "Format isn't correct!"
-    echo "films_1 films_full_pre.csv update(optional)"
+    echo "in_file_list in_file_descriptions out_file update(optional)"
     exit
 fi
 
@@ -12,11 +12,11 @@ USER_AGENT="Mozilla/5.0 (Windows; U; Windows NT 5.1; AppleWebKit/534.1 (KHTML, l
 #cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
 DELIM=`grep -m 1 "2012" "$2" | cut -c 16`
 
-FILMS=`grep -c -E "*" "$1"`
+FILMS_NUMBER=`grep -c -E "*" "$1"`
 FILMS_I=0
 function print_progress() {
     FILMS_I=`expr $FILMS_I + 100`
-    PROGRESS=`expr $FILMS_I / $FILMS`
+    PROGRESS=`expr $FILMS_I / $FILMS_NUMBER`
     echo -en "\rProgress: $PROGRESS% "
 }
 
@@ -51,7 +51,7 @@ do
     DATA_EXIST=`echo "$STRING" | cut -d "$DELIM" -f3`
     #echo "$FILM"
     #echo "$STRING"
-    if [[ "$3" == "update" || "$DATA_EXIST" == "" ]]
+    if [[ "$4" == "update" || "$DATA_EXIST" == "" ]]
     then
         file_download
 
@@ -90,4 +90,4 @@ do
         echo "$STRING" >> /tmp/films_full.csv
     fi
 done
-mv /tmp/films_full.csv films_full2.csv
+mv /tmp/films_full.csv $3
