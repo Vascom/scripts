@@ -10,9 +10,11 @@ fi
 
 if [ "$3" = "16" ]
 then
-    DIST="-alpha$3"
+    DIST="dist-rfr-alpha$3"
+elif [ "$3" = "6" ]
+    DIST="dist-el$3"
 else
-    DIST="$3"
+    DIST="dist-rfr$3"
 fi
 
 if [ "$4" = "test" ]
@@ -22,7 +24,7 @@ fi
 
 if [ "$1" = "regen" ]
 then
-    koji regen-repo dist-rfr$DIST-build
+    koji regen-repo $DIST-build
     exit 0
 fi
 
@@ -30,5 +32,5 @@ if [[ -z "$3" || "$3" -le "0" ]]
 then
     echo "Need first DIST_NUMBER"
 else
-    koji build $TEST dist-rfr$DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
+    koji build $TEST $DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
 fi
