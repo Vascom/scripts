@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ -z "$1" -o -z "$2" ]
+then
+    echo "Format isn't correct!"
+    echo "Use renswap first_file second_file"
+    exit
+fi
+
+mv "$1" "$1.renswaptmp"
+mv "$2" "$1"
+mv "$1.renswaptmp" "$2"

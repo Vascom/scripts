@@ -7,6 +7,7 @@ films_descriptions   - download information about my films and parce it to table
 hosts                - hosts for Javad
 koji_run             - run koji build process
 mail.sh              - send email via script when computer start
+renswap              - swap two files
 repn                 - make many copies of text with variables
 rtl_clean_backup     - make backup of work files
 rtorrent.sh          - start screen session with rtorrent at startup
