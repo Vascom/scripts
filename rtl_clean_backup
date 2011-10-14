@@ -1,17 +1,30 @@
 #!/bin/bash
 
-if [ -e ~/unenc/triumph2/rtl/ ]
-then
-    scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/rtl/* ~/p_rtl/
-    du -hs ~/p_rtl
-    find ~/p_rtl/ -name ".svn" -exec rm -rf {} \; 2>/dev/null
-    find ~/p_rtl/ -name "work" -exec rm -rf {} \; 2>/dev/null
-    find ~/p_rtl/ -name "Makefile*" -delete
-    find ~/p_rtl/ -name "*~" -delete
-    find ~/p_rtl/ -name "*.bak" -delete
-    find ~/p_rtl/ -name "config.makefile" -delete
-    du -hs ~/p_rtl
-    cp -ru ~/p_rtl/* ~/unenc/triumph2/rtl/
-else
-    echo "~/unenc/ not mounted"
-fi
+function directory_copy() {
+    if [ -e ~/unenc/triumph2/$1/ ]
+    then
+        scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* ~/p_$1/
+        du -hs ~/p_$1
+        find ~/p_$1/ -name ".svn" -exec rm -rf {} \; 2>/dev/null
+        find ~/p_$1/ -name "work" -exec rm -rf {} \; 2>/dev/null
+        find ~/p_$1/ -name "Makefile*" -delete
+        find ~/p_$1/ -name "*~" -delete
+        find ~/p_$1/ -name "*.bak" -delete
+        find ~/p_$1/ -name "config.makefile" -delete
+        du -hs ~/p_$1
+        cp -ru ~/p_$1/* ~/unenc/triumph2/$1/
+    else
+        echo "~/unenc/$1 not mounted"
+    fi
+}
+
+case "$1" in
+    "1" )   directory_copy rtl;;
+    "2" )   directory_copy doc;;
+    "3" )   directory_copy model;;
+    ""  )
+            directory_copy rtl
+            directory_copy doc
+            directory_copy model
+            ;;
+esac
