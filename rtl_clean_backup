@@ -3,16 +3,22 @@
 function directory_copy() {
     if [ -e ~/unenc/triumph2/$1/ ]
     then
-        scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* ~/p_$1/
+        if [ "$1" == "doc" ]
+        then
+            scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/[dst]* ~/p_$1/
+        else
+            scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* ~/p_$1/
+        fi
         du -hs ~/p_$1
-        find ~/p_$1/ -name ".svn" -exec rm -rf {} \; 2>/dev/null
-        find ~/p_$1/ -name "work" -exec rm -rf {} \; 2>/dev/null
-        find ~/p_$1/ -name "Makefile*" -delete
-        find ~/p_$1/ -name "*~" -delete
-        find ~/p_$1/ -name "*.bak" -delete
-        find ~/p_$1/ -name "config.makefile" -delete
+        find ~/p_$1 -name ".svn" -exec rm -rf {} \; 2>/dev/null
+        find ~/p_$1 -name "work" -exec rm -rf {} \; 2>/dev/null
+        find ~/p_$1 -name "Makefile*" -delete
+        find ~/p_$1 -name "*~" -delete
+        find ~/p_$1 -name "*.bak" -delete
+        find ~/p_$1 -name "config.makefile" -delete
         du -hs ~/p_$1
         cp -ru ~/p_$1/* ~/unenc/triumph2/$1/
+        rm -rf ~/p_$1/*
     else
         echo "~/unenc/$1 not mounted"
     fi
