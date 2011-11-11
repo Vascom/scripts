@@ -8,10 +8,11 @@ then
     exit
 fi
 
-if [ "$3" = "16" ]
-then
-    DIST="dist-rfr-alpha$3"
-elif [ "$3" = "6" ]
+# if [ "$3" = "16" ]
+# then
+#     DIST="dist-rfr-alpha$3"
+# el
+if [ "$3" = "6" ]
 then
     DIST="dist-el$3"
 else
