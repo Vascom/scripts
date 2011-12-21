@@ -8,13 +8,16 @@ then
     exit
 fi
 
-# if [ "$3" = "16" ]
-# then
-#     DIST="dist-rfr-alpha$3"
-# el
+#if [ "$3" = "16" ]
+#then
+#    DIST="dist-rfr-alpha$3"
+#el
 if [ "$3" = "6" ]
 then
     DIST="dist-el$3"
+elif [ "$3" = "rawhide" ]
+then
+    DIST="dist-rfr-rawhide"
 else
     DIST="dist-rfr$3"
 fi
@@ -30,7 +33,7 @@ then
     exit 0
 fi
 
-if [[ -z "$3" || "$3" -le "0" ]]
+if [[ -z "$3" ]]
 then
     echo "Need first DIST_NUMBER"
 else
