@@ -1,0 +1,18 @@
+#!/bin/bash
+
+NUM=1
+N="-n"
+
+while read BIN_DATA
+do
+    HEX_DATA=`echo "obase=16;ibase=2; $BIN_DATA" | bc`
+    NUM=`expr $NUM + 1`
+    if [[ $NUM == 9 ]]
+    then
+        N=""
+        NUM=1
+    else
+        N="-n"
+    fi
+    echo $N "0x$HEX_DATA,"
+done < "$1"
