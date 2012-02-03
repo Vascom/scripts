@@ -2,6 +2,7 @@ aliases              - list of useful aliases
 all_films            - make films list from my hard disks
 bin2hex              - convert bin nubbers to hex numbers
 build_all_packages   - scrips for auto-build packages in koji
+config               - config for ssh on work
 conv_andr            - resize number of images with multiprocessing
 copy_films           - copy some films from my collection to other devices
 films_descriptions   - download information about my films and parce it to table

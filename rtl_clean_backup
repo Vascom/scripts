@@ -6,6 +6,9 @@ function directory_copy() {
         if [ "$1" == "doc" ]
         then
             scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/[dst]* ~/p_$1/
+        elif [ "$1" == "sim" ]
+        then
+            scp -rq vglazov@systech7:/home/vglazov/triumph40n_2/trunk/sim/program_tests ~/p_sim/
         else
             scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* ~/p_$1/
         fi
@@ -18,7 +21,7 @@ function directory_copy() {
         find ~/p_$1 -name "config.makefile" -delete
         du -hs ~/p_$1
         cp -ru ~/p_$1/* ~/unenc/triumph2/$1/
-        rm -rf ~/p_$1/*
+        rm -rf ~/p_$1
     else
         echo "~/unenc/$1 not mounted"
     fi
@@ -28,9 +31,11 @@ case "$1" in
     "1" )   directory_copy rtl;;
     "2" )   directory_copy doc;;
     "3" )   directory_copy model;;
+    "4" )   directory_copy sim;;
     ""  )
             directory_copy rtl
             directory_copy doc
             directory_copy model
+            directory_copy sim
             ;;
 esac
