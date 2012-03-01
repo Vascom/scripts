@@ -13,7 +13,7 @@ LOCAL_HOSTNAME=`hostname -s`
 STATE_RU=остановлен
 STATE_EN=stop
 
-if [ $START_STOP == 1 ]
+if [[ $START_STOP == 1 ]]
 then
     STATE_RU=запущен
     STATE_EN=start
