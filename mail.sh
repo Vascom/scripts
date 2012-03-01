@@ -4,8 +4,20 @@
 #SMTP server for Ecotelecom provider
 #set smtp=smtp.ecotelecom.ru
 
+START_STOP=1
+
 START_DATE=`date`
 SENSORS=`sensors`
 LOCAL_HOSTNAME=`hostname -s`
 
-echo -e "Компьютер $LOCAL_HOSTNAME запущен $START_DATE\n\n $SENSORS" | mail -s "$LOCAL_HOSTNAME started $START_DATE" vascom2@gmail.com
+STATE_RU=остановлен
+STATE_EN=stop
+
+if [ $START_STOP == 1 ]
+then
+    STATE_RU=запущен
+    STATE_EN=start
+fi
+
+echo -e "Компьютер $LOCAL_HOSTNAME $STATE_RU $START_DATE\n\n $SENSORS" |
+    mail -s "$LOCAL_HOSTNAME $STATE_EN $START_DATE" vascom2@gmail.com
