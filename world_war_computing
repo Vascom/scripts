@@ -1,0 +1,44 @@
+#!/bin/bash
+
+a=( 3 10 15 32 50 )
+b=( 945000 1710000 3910000 9240000 16500000 )
+c=( 1000 6500 16500 56000 270000 )
+d=( 75000 418000 2080000 7200000 33000000 )
+
+LIMIT=${#a[@]}
+
+
+for ((k=0; k < LIMIT ; k++))
+do
+    DEF[$k]=`expr ${b[$k]} / ${a[$k]}`
+    POW[$k]=`expr ${d[$k]} / ${c[$k]}`
+done
+
+MIN_DEF=${DEF[0]}
+MIN_POW=${POW[0]}
+
+for ((k=1; k < LIMIT ; k++))
+do
+    if [[ ${DEF[$k]} < $MIN_DEF ]]
+    then
+        MIN_DEF=${DEF[$k]}
+    fi
+
+    if [[ ${POW[$k]} < $MIN_POW ]]
+    then
+        MIN_POW=${POW[$k]}
+    fi
+done
+
+for ((k=0; k < LIMIT ; k++))
+do
+    if [[ $MIN_DEF == ${DEF[$k]} ]]
+    then
+        echo -e "DEF: ${a[$k]} \tPrice ${b[$k]}"
+    fi
+
+    if [[ $MIN_POW == ${POW[$k]} ]]
+    then
+        echo -e "POW: ${c[$k]} \tPrice ${d[$k]}"
+    fi
+done
