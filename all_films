@@ -1,17 +1,67 @@
 #!/bin/bash
 
-if [ -e "/media/data_2tb1" ]
+if [ "$1" = "list" ]
 then
-    du -h --max-depth=2 /media/data_2tb1/Фильмы/ | cut -f 2 |
-    grep -xv -E "/media/data_2tb1/Фильмы/0-9|/media/data_2tb1/Фильмы/[А-ЯЁ]" |
-    sort | tail -n +2 > ~/films_0
-    #cat ~/films_0 | grep
+    if [ ! -e "/media/data_2tb1" ]
+    then
+        #du -h --max-depth=2 /media/data_2tb1/Фильмы/ | cut -f 2 |
+        #grep -xv -E "/media/data_2tb1/Фильмы/0-9|/media/data_2tb1/Фильмы/[А-ЯЁ]" |
+        #sort | tail -n +2 > ~/films_0
 
-    du -h --max-depth=2 /media/data_2tb1/Фильмы\ отечественные/* | cut -f 2 | sort >> ~/films_0
-    du -h --max-depth=2 /media/data_2tb1/Мультфильмы/* | cut -f 2 | sort >> ~/films_0
-    cut -d "/" -f 4,5,6 ~/films_0 > ~/films_1
-    echo "films_0 - list with full paths"
-    echo "films_1 - list with only films names"
+        du -h --max-depth=2 /media/7ce1b5c3-7599-45f0-9299-e5e8c656e1de/Фильмы\ отечественные/* | cut -f 2 | sort >> ~/films_0
+        #du -h --max-depth=2 /media/data_2tb1/Мультфильмы/* | cut -f 2 | sort >> ~/films_0
+        cut -d "/" -f 4,5,6 ~/films_0 > ~/films_1
+        echo "films_0 - list with full paths"
+        echo "films_1 - list with only films names"
+    else
+        echo "Hard disk with films not mounted"
+    fi
+elif [ "$1" = "info" ]
+then
+    FTMP_PATH="/tmp/all_films"
+    if [ ! -e "$FTMP_PATH" ]
+    then
+        mkdir $FTMP_PATH
+        sudo mount -t tmpfs tmpfs $FTMP_PATH
+    else
+        rm -f $FTMP_PATH/*
+    fi
+    
+    #rm -f /home/vascom/Dropbox/mediainfo/formats
+
+    find . -type f \
+    | while read k ;
+    #for k in *
+    do
+        #echo "Processing $k"
+        mediainfo "$k" > $FTMP_PATH/mediainfo.log
+        #NAME=`grep -m 1 "Complete name" /tmp/mediainfo.log | cut -d "/" -f3`
+        NAME=`basename "$k"`
+        FORMAT=`grep -m 1 Format $FTMP_PATH/mediainfo.log | cut -d ":" -f2 | cut -d " " -f2`
+        echo $NAME
+        if [[ "$FORMAT" == "AVI" || "$FORMAT" == "Matroska" || "$FORMAT" == "DivX" ]]
+        then
+            WIDTH=`grep -m 1 Width $FTMP_PATH/mediainfo.log | cut -d ":" -f2 | cut -d " " -f2`
+            HEIGHT=`grep -m 1 Height $FTMP_PATH/mediainfo.log | cut -d ":" -f2 | cut -d " " -f2`
+            ASP_RAT0=`grep -m 1 "Display aspect ratio" $FTMP_PATH/mediainfo.log | cut -d ":" -f2 | cut -d "." -f1`
+            ASP_RAT1=`grep -m 1 "Display aspect ratio" $FTMP_PATH/mediainfo.log | cut -d ":" -f2 | cut -d "." -f2 | cut -c 1,2`
+            ASP_RAT2=`grep -m 1 "Display aspect ratio" $FTMP_PATH/mediainfo.log | cut -d ":" -f3`
+            if [[ "$ASP_RAT2" == "" ]]
+            then 
+                ASP_RAT2="1"
+            fi
+            WIDTH2=`expr \( \( $ASP_RAT0 \* 100 + $ASP_RAT1 \) \* $HEIGHT \/ $ASP_RAT2 \) \/ 100`
+            if [ "$WIDTH" -le "720" ] && [ "$WIDTH" -gt "1" ]
+            then
+                NAMEPOS=`echo "$WIDTH2_$NAME"`
+                echo "$ASP_RAT0 $ASP_RAT1 $ASP_RAT2 $WIDTH2 $NAME"
+                mv $FTMP_PATH/mediainfo.log "/home/vascom/Dropbox/mediainfo/aaa $WIDTH2 $NAME.log"
+            fi
+        else
+            echo "File $k have format $FORMAT" >> $FTMP_PATH/formats.log
+        fi
+    done
+    mv $FTMP_PATH/formats.log /home/vascom/Dropbox/mediainfo/formats
 else
-    echo "Hard disk with films not mounted"
+    echo "Enter list or info"
 fi
