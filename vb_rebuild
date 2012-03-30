@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ ! -e /tmp/vb_rebuild ]
+then
+    mkdir /tmp/vb_rebuild
+fi
+sudo mount /dev/sr0 /tmp/vb_rebuild
+sudo /tmp/vb_rebuild/VBoxLinuxAdditions.run

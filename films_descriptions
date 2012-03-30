@@ -1,6 +1,9 @@
 #!/bin/bash
 
-if [ -z "$1" -o -z "$2" -o -z "$3" ]
+IN_FILE_LIST=$1
+IN_FILE_DESCR=$2
+
+if [ -z "$IN_FILE_LIST" -o -z "$IN_FILE_DESCR" -o -z "$3" ]
 then
     echo "Format isn't correct!"
     echo "in_file_list in_file_descriptions out_file update(optional)"
@@ -10,9 +13,9 @@ fi
 USER_AGENT="Mozilla/5.0 (Windows; U; Windows NT 5.1; AppleWebKit/534.1 (KHTML, like Gecko) Chrome/6.0.437.3 Safari/534.1"
 
 #cat $1 | head -n 47 | tail -n 3 > /tmp/init_list_fd
-DELIM=`grep -m 1 "2012" "$2" | cut -c 16`
+DELIM=`grep -m 1 "2012" "$IN_FILE_DESCR" | cut -c 16`
 
-FILMS_NUMBER=`grep -c -E "*" "$1"`
+FILMS_NUMBER=`grep -c -E "*" "$IN_FILE_LIST"`
 FILMS_I=0
 function print_progress() {
     FILMS_I=`expr $FILMS_I + 100`
@@ -21,10 +24,16 @@ function print_progress() {
 }
 
 function file_download() {
-    if [ ! -e $HOME/Dropbox/films_about/$NUMBER.html ]
+    if [[ -e $HOME/Dropbox/films_about/$NUMBER.html ]]
     then
-        wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
-        http://m.kinopoisk.ru/movie/$NUMBER/
+        local SZOR=`grep -c "СЗоР" $HOME/Dropbox/films_about/$NUMBER.html`
+    fi
+
+    if [[ ! -e $HOME/Dropbox/films_about/$NUMBER.html || $SZOR > 0 ]]
+    then
+#         wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
+#         http://m.kinopoisk.ru/movie/$NUMBER/
+        lynx -source http://m.kinopoisk.ru/movie/$NUMBER/ > $HOME/Dropbox/films_about/$NUMBER.html
         iconv -f cp1251 -t utf8 $HOME/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
         mv /tmp/index2.html $HOME/Dropbox/films_about/$NUMBER.html
         echo "Film $FILM downloaded"
@@ -42,10 +51,12 @@ function html_parsing() {
 }
 
 echo "Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание|Картинка" > /tmp/films_full.csv
-cat $1 | while read FILM
+echo "Обложка|Название|ВЭБ|Дата|Длительность|Жанр|Страна|Оригинальный заголовок|Описание" > /tmp/films_full_gd.csv
+
+cat $IN_FILE_LIST | while read FILM
 do
     print_progress
-    STRING=`grep -m 1 "$FILM" "$2"`
+    STRING=`grep -m 1 "$FILM" "$IN_FILE_DESCR"`
     URL=`echo "$STRING" | cut -d "$DELIM" -f2`
     NUMBER=`echo $URL | cut -d "/" -f7`
     DATA_EXIST=`echo "$STRING" | cut -d "$DELIM" -f3`
@@ -56,11 +67,12 @@ do
         file_download
 
         FILE_ABOUT="$HOME/Dropbox/films_about/$NUMBER.html"
-        NAME_RU=`html_parsing 43`
-        LINE_44=`html_parsing 44`
+        NAME_RU=`html_parsing 41`
+        #echo $NAME_RU
+        LINE_44=`html_parsing 42`
 
-        GENRE=`html_parsing 48`
-        COUNTRY=`html_parsing 49`
+        GENRE=`html_parsing 46`
+        COUNTRY=`html_parsing 47`
         DESCR=`grep "descr" "$FILE_ABOUT" | cut -d ">" -f2 | cut -d "<" -f1`
         PICT="$HOME/Dropbox/films_images/$NUMBER.jpg"
         #GENRE=`echo $GENRE | sed 's|,||g'`
@@ -75,7 +87,7 @@ do
             NAME_EN=`echo $LINE_44 | cut -d "," -f1`
             YEAR=`echo $LINE_44 | cut -d "," -f2`
             if [[ "$YEAR" = " The" || "$YEAR" = " Le" \
-                || "$YEAR" = " La" || "$YEAR" = " Man" || "$YEAR" = " Robot" ]] 
+                || "$YEAR" = " La" || "$YEAR" = " Man" || "$YEAR" = " Robot" ]]
             then
                 NAME_EN="$NAME_EN,$YEAR"
                 YEAR=`echo $LINE_44 | cut -d "," -f3`
@@ -84,10 +96,14 @@ do
                 DURATION=`echo $LINE_44 | cut -d "," -f3`
             fi
         fi
+        IMG="=Image(\"http://st.kinopoisk.ru/images/film/$NUMBER.jpg\",1)"
 
         echo "$FILM|$URL|$YEAR|$DURATION|$GENRE|$COUNTRY|$NAME_EN|$DESCR|$PICT" >> /tmp/films_full.csv
+        echo "$IMG|$FILM|$URL|$YEAR|$DURATION|$GENRE|$COUNTRY|$NAME_EN|$DESCR" >> /tmp/films_full_gd.csv
     else
         echo "$STRING" >> /tmp/films_full.csv
     fi
 done
 mv /tmp/films_full.csv $3
+mv /tmp/films_full_gd.csv films_full_gd.csv
+echo -e "\n"

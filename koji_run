@@ -8,18 +8,28 @@ then
     exit
 fi
 
+if [ "$1" = "regen" ]
+then
+    D_SHORT="$2"
+else
+    D_SHORT="$3"
+fi
+
 #if [ "$3" = "16" ]
 #then
 #    DIST="dist-rfr-alpha$3"
 #el
-if [ "$3" = "6" ]
+if [ "$D_SHORT" = "6" ]
 then
-    DIST="dist-el$3"
-elif [ "$3" = "rawhide" ]
+    DIST="dist-el$D_SHORT"
+elif [ "$D_SHORT" = "rawhide" ]
 then
     DIST="dist-rfr-rawhide"
+elif [ "$D_SHORT" = "17" ]
+then
+    DIST="dist-rfr$D_SHORT-devel"
 else
-    DIST="dist-rfr$3"
+    DIST="dist-rfr$D_SHORT"
 fi
 
 if [ "$4" = "test" ]
@@ -29,7 +39,7 @@ fi
 
 if [ "$1" = "regen" ]
 then
-    koji regen-repo $DIST-build
+    koji -c /etc/koji-rfr.conf regen-repo $DIST-build
     exit 0
 fi
 
@@ -37,5 +47,5 @@ if [[ -z "$3" ]]
 then
     echo "Need first DIST_NUMBER"
 else
-    koji build $TEST $DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
+    koji -c /etc/koji-rfr.conf build $TEST $DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
 fi

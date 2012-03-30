@@ -1,29 +1,34 @@
 #!/bin/bash
 
-NUMBER_LINES=`head -n 1 $1 | cut -d "," -f2`
-REPO_TYPE=`head -n 1 $1 | cut -d "," -f1`
+#Parameters
+SEQ=( 6 rawhide 15 16 17 )
+SEQ_NUM=( 4 5 6 7 8 )
+NAME_FIELD=f1
+LINES_FIELD=f2
+GITREV_FIELD=f3
+SCRATCH_FIELD=f12
+ENABLE_FIELD=f13
+SLEEP_FAST=120
+SLEEP_SLOW=10
+
+TASK_COUNT=0
+NUMBER_LINES=`head -n 1 $1 | cut -d "," -$LINES_FIELD`
 TEMP_LINE=`head -n $NUMBER_LINES $1 | tail -n +2`
-if [ "$REPO_TYPE" = "rfr" ]
-then
-    SEQ="4 5 6"
-else
-    SEQ="-4"
-fi
 
 for n in $TEMP_LINE
 do
-    BUILD_ENABLE=`echo $n | cut -d "," -f11`
+    BUILD_ENABLE=`echo $n | cut -d "," -$ENABLE_FIELD`
     if [ "$BUILD_ENABLE" = "+" ]
     then
-        NAME=`echo $n | cut -d "," -f1`
-        REV=`echo $n | cut -d "," -f3`
-        for k in $SEQ
+        NAME=`echo $n | cut -d "," -$NAME_FIELD`
+        REV=`echo $n | cut -d "," -$GITREV_FIELD`
+        for ((k=0; k < 5 ; k++))
         do
-            STATE=`echo $n | cut -d "," -f$k`
-            BUILD=`expr $k + 10`
+            STATE=`echo $n | cut -d "," -f${SEQ_NUM[$k]}`
+            BUILD=${SEQ[$k]}
             if [[ "$STATE" = "-" && "$2" != "repo" ]]
             then
-                SCRATCH=`echo $n | cut -d "," -f10`
+                SCRATCH=`echo $n | cut -d "," -$SCRATCH_FIELD`
                 if [[ "$SCRATCH" = "-" || "$2" = "test" ]]
                 then
                     TEST="test"
@@ -33,8 +38,12 @@ do
 
                 echo "Building $NAME $BUILD"
                 ./koji_run $NAME $REV $BUILD $TEST
-                sleep 5
 
+                if [ $TASK_COUNT -lt 3 ]
+                then sleep $SLEEP_FAST
+                else sleep $SLEEP_SLOW
+                fi
+                TASK_COUNT=`expr $TASK_COUNT + 1`
             elif [[ ("$STATE" = '+' || "$STATE" = 'b+') && "$2" = "repo"  ]]
             then
                 REPONUM=`expr $k + 3`
