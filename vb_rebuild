@@ -1,8 +1,16 @@
 #!/bin/bash
 
-if [ ! -e /tmp/vb_rebuild ]
+#Check
+START_USER=`whoami`
+
+if [ $START_USER == "root" ]
 then
-    mkdir /tmp/vb_rebuild
+    if [ ! -e /tmp/vb_rebuild ]
+    then
+        mkdir /tmp/vb_rebuild
+    fi
+    mount /dev/sr0 /tmp/vb_rebuild
+    /tmp/vb_rebuild/VBoxLinuxAdditions.run
+else
+    echo "You must be root for run this script"
 fi
-sudo mount /dev/sr0 /tmp/vb_rebuild
-sudo /tmp/vb_rebuild/VBoxLinuxAdditions.run
