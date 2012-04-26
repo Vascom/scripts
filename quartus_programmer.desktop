@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Quartus Programmer
+GenericName=Quartus Programmer
+Comment=Program Altera's FPGA using USB Blaster
+Name[ru]=Quartus Programmer
+GenericName[ru]=Quartus Programmer
+Comment[ru]=Программатор FPGA Altera
+Exec=/home/vascom/altera/11.1/qprogrammer/bin/quartus_pgmw
+TryExec=/home/vascom/altera/11.1/qprogrammer/bin/quartus_pgmw
+Icon=mplayer2
+Terminal=false
+Type=Application
+NoDisplay=false
+Categories=Development;
+Name[ru_RU]=Quartus Programmer
