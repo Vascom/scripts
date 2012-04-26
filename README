@@ -5,10 +5,13 @@ build_all_packages   - scrips for auto-build packages in koji
 config               - config for ssh on work
 conv_andr            - resize number of images with multiprocessing
 copy_films           - copy some films from my collection to other devices
+enmea                - script for parcing NMEA
 films_descriptions   - download information about my films and parce it to table
 hosts                - hosts for Javad
+javad-gnss.conf      - config for AVT2 board USB-COM module support
 koji_run             - run koji build process
 mail.sh              - send email via script when computer start
+quartus_programmer   - desktop-file for Quartus Programmer
 renswap              - swap two files
 repn                 - make many copies of text with variables
 rtl_clean_backup     - make backup of work files
@@ -16,3 +19,4 @@ rtorrent.sh          - start screen session with rtorrent at startup
 vb_rebuild           - build VB Guest Additions for new kernel
 world_war_computing  - script for compute best price in WW game
 zipscr               - zip number of files (books for bookreader)
+
