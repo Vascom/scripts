@@ -1,0 +1,117 @@
+#!/bin/bash
+
+IN_FILE_LIST=$1
+GGA_DECODE_COUNTER=0
+GSV_DECODE_COUNTER=0
+UNKNOWN_DECODE_COUNTER=0
+SAT_V=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+SV_CUR=0
+
+TOTAL_GGA=`grep -c GGA "$1"`
+TIME_PRE=`cat $IN_FILE_LIST | grep GPGGA -m 1 | cut -d "," -f2 | cut -d "." -f1`
+TIME=`expr $TIME_PRE - 1`
+
+rm -rf /tmp/nmea/log
+FILE_IN=`cat $IN_FILE_LIST`
+
+for FILM in `echo "$FILE_IN"`
+do
+    NAVMES=`echo "$FILM" | cut -d "," -f1`
+    if [[ "$NAVMES" == "\$GPGGA" ]]
+    then
+        #TIME_H=`echo "$FILM" | cut -c8,9`
+        #TIME_M=`echo "$FILM" | cut -c9,10`
+        #TIME_S=`echo "$FILM" | cut -c11,12`
+        #TIME=`expr $TIME_H * 3600 + $TIME_M * 60 + $TIME_S`
+        TIME=`echo "$FILM" | cut -d "," -f2 | cut -d "." -f1`
+        
+        #LATITUDE=`echo "$FILM" | cut -d "," -f3`
+        #N_S=`echo "$FILM" | cut -d "," -f4`
+        #LONGITUDE=`echo "$FILM" | cut -d "," -f5`
+        #E_W=`echo "$FILM" | cut -d "," -f6`
+        #GPS_QUALITY=`echo "$FILM" | cut -d "," -f7`
+        #TOTAL_SATELLITES=`echo "$FILM" | cut -d "," -f8`
+        #HDOP=`echo "$FILM" | cut -d "," -f9`
+        #ALTITUDE=`echo "$FILM" | cut -d "," -f10`
+        #ALTITUDE_UNITS=`echo "$FILM" | cut -d "," -f11`
+        #GEOIDAL_SEPARATION=`echo "$FILM" | cut -d "," -f12`
+        #GEOIDAL_SEPARATION_UNITS=`echo "$FILM" | cut -d "," -f13`
+        #TIME=`echo "$FILM" | cut -d "," -f14`
+        #TIME=`echo "$FILM" | cut -d "," -f15`
+        #TIME=`echo "$FILM" | cut -d "," -f16`
+        GGA_DECODE_COUNTER=`expr $GGA_DECODE_COUNTER + 1`
+        SAT_V=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+        SV_CUR=0
+        echo -ne "\rGGA: $GGA_DECODE_COUNTER"
+    elif [[ "$NAVMES" == "\$GPGSV" ]]
+    then
+        TOTAL_MESSAGES=`echo "$FILM" | cut -d "," -f2`
+        MESSAGE_NUMBER=`echo "$FILM" | cut -d "," -f3`
+#         TOTAL_SV=`echo "$FILM" | cut -d "," -f4`
+
+        SV_NUMBER=`echo "$FILM" | cut -d "," -f5`
+        if [[ $SV_NUMBER == "08" || $SV_NUMBER == "09" ]]
+        then
+            SV_NUMBER=`expr $SV_NUMBER + 0`
+        fi
+#             ELEVATION[$M]=`echo "$FILM" | cut -d "," -f${FF[1]}`
+#             AZIMUTH[$M]=`echo "$FILM" | cut -d "," -f${FF[2]}`
+        if [[ SV_NUMBER != "" ]]
+        then
+            SAT_V[$SV_NUMBER]=`echo "$FILM" | cut -d "," -f8 | cut -d "*" -f1`
+        fi
+
+        SV_NUMBER=`echo "$FILM" | cut -d "," -f9`
+        if [[ $SV_NUMBER == "08" || $SV_NUMBER == "09" ]]
+        then
+            SV_NUMBER=`expr $SV_NUMBER + 0`
+        fi
+        if [[ SV_NUMBER != "" ]]
+        then
+            SAT_V[$SV_NUMBER]=`echo "$FILM" | cut -d "," -f12 | cut -d "*" -f1`
+        fi
+
+        SV_NUMBER=`echo "$FILM" | cut -d "," -f13`
+        if [[ $SV_NUMBER == "08" || $SV_NUMBER == "09" ]]
+        then
+            SV_NUMBER=`expr $SV_NUMBER + 0`
+        fi
+        if [[ SV_NUMBER != "" ]]
+        then
+            SAT_V[$SV_NUMBER]=`echo "$FILM" | cut -d "," -f16 | cut -d "*" -f1`
+        fi
+
+        SV_NUMBER=`echo "$FILM" | cut -d "," -f17`
+        if [[ $SV_NUMBER == "08" || $SV_NUMBER == "09" ]]
+        then
+            SV_NUMBER=`expr $SV_NUMBER + 0`
+        fi
+        if [[ SV_NUMBER != "" ]]
+        then
+            SAT_V[$SV_NUMBER]=`echo "$FILM" | cut -d "," -f20 | cut -d "*" -f1`
+        fi
+# if [[ $GGA_DECODE_COUNTER == "615" || $GGA_DECODE_COUNTER == "616" ]]
+# then
+#     echo $FILM
+#     echo "$FILM" | cut -d "," -f13
+#     echo "${SAT_V[@]} $TIME"
+#     echo ${SAT_V[00]} ${SAT_V[01]}
+# fi
+
+        if [[ "$TOTAL_MESSAGES" == "$MESSAGE_NUMBER" ]]
+        then
+            SAT_V[0]=$TIME
+            echo "${SAT_V[@]}" >> /tmp/nmea/log
+            #/home/vascom/sat/log
+        fi
+        
+        #GSV_DECODE_COUNTER=`expr $GSV_DECODE_COUNTER + 1`
+    else
+        echo -n ""
+        #echo "Unknown Navigation message"
+        #$UNKNOWN_DECODE_COUNTER=`expr $UNKNOWN_DECODE_COUNTER + 1`
+    fi
+done
+
+#echo -e "\nGSV: $GSV_DECODE_COUNTER"
+echo -e "\nUnknown: $UNKNOWN_DECODE_COUNTER"
