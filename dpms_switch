@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#Controlling browser
+BROWSER=chromium
+#Threshold of CPU utilisation by browser
+THR=25
+
+#Check dpms status
+DPMS_STATUS=`xset -display :0 q | grep "DPMS is" | cut -d " " -f5`
+
+if [[ "$1" == "manual" ]]
+then
+    if [[ "$DPMS_STATUS" == "Disabled" ]]
+    then
+        xset +dpms -display :0
+    else
+        xset -dpms -display :0
+    fi
+else
+    #Check status of browser
+    FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "." -f1`
+
+    if (( "$FLASH_STATE" > "$THR" ))
+    then
+        if [[ "$DPMS_STATUS" == "Enabled" ]]
+        then
+            xset -dpms -display :0
+        fi
+    else
+        if [[ "$DPMS_STATUS" == "Disabled" ]]
+        then
+            xset +dpms -display :0
+        fi
+    fi
+fi
