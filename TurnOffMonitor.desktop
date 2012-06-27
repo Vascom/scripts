@@ -2,7 +2,7 @@
 Categories=Application;Utilities;
 Comment[ru]=Turn Off the Monitor
 Comment=Turn Off the Monitor
-Exec=xset +dpms
+Exec=/home/vascom/dpms_switch manual
 GenericName[ru]=Turn Off Monitor
 GenericName=Turn Off Monitor
 Icon=weather-clear-night

@@ -21,8 +21,9 @@ then
 else
     #Check status of browser
     FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "." -f1`
+    echo $FLASH_STATE >> /tmp/dpms_debug
 
-    if (( "$FLASH_STATE" != "" ))
+    if [ "$FLASH_STATE" != "" ]
     then
         if (( "$FLASH_STATE" > "$THR" ))
         then

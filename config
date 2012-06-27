@@ -1,4 +1,5 @@
 #~/.ssh/config
+#chmod 600
 
 Host systech*
     User vglazov

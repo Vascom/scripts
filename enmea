@@ -101,7 +101,7 @@ do
         if [[ "$TOTAL_MESSAGES" == "$MESSAGE_NUMBER" ]]
         then
             SAT_V[0]=$TIME
-            echo "${SAT_V[@]}" >> /tmp/nmea/log
+            echo "${SAT_V[@]}" >> /tmp/nmea/$1
             #/home/vascom/sat/log
         fi
         

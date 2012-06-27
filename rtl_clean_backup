@@ -3,29 +3,33 @@
 function directory_copy() {
     if [ -e ~/unenc/triumph2/$1/ ]
     then
+        mkdir /tmp/rtl_clean_backup_$1/
         if [ "$1" == "doc" ]
         then
-            scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/[dst]* ~/p_$1/
+            scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/[dst]* /tmp/rtl_clean_backup_$1/
         elif [ "$1" == "sim" ]
         then
-            scp -rq vglazov@systech7:/home/vglazov/triumph40n_2/trunk/sim/program_tests ~/p_sim/
+            scp -rq vglazov@systech7:/home/vglazov/triumph40n_2/trunk/sim/program_tests /tmp/rtl_clean_backup_$1/
         else
-            scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* ~/p_$1/
+#             scp -rq vglazov@systech7:/home/vglazov/triumph40n/trunk/$1/* /tmp/rtl_clean_backup_$1/
+            cp -r /home/vascom/triumph40/$1/* /tmp/rtl_clean_backup_$1/
         fi
-        du -hs ~/p_$1
-        find ~/p_$1 -name ".svn" -exec rm -rf {} \; 2>/dev/null
-        find ~/p_$1 -name "work" -exec rm -rf {} \; 2>/dev/null
-        find ~/p_$1 -name "Makefile*" -delete
-        find ~/p_$1 -name "*~" -delete
-        find ~/p_$1 -name "*.bak" -delete
-        find ~/p_$1 -name "config.makefile" -delete
-        du -hs ~/p_$1
-        cp -ru ~/p_$1/* ~/unenc/triumph2/$1/
-        rm -rf ~/p_$1
+        du -hs /tmp/rtl_clean_backup_$1
+        find /tmp/rtl_clean_backup_$1 -name ".svn" -exec rm -rf {} \; 2>/dev/null
+        find /tmp/rtl_clean_backup_$1 -name "work" -exec rm -rf {} \; 2>/dev/null
+        find /tmp/rtl_clean_backup_$1 -name "Makefile*" -delete
+        find /tmp/rtl_clean_backup_$1 -name "*~" -delete
+        find /tmp/rtl_clean_backup_$1 -name "*.bak" -delete
+        find /tmp/rtl_clean_backup_$1 -name "config.makefile" -delete
+        du -hs /tmp/rtl_clean_backup_$1
+        cp -ru /tmp/rtl_clean_backup_$1/* ~/unenc/triumph2/$1/
+        rm -rf /tmp/rtl_clean_backup_$1
     else
         echo "~/unenc/$1 not mounted"
     fi
 }
+
+
 
 case "$1" in
     "1" )   directory_copy rtl;;
