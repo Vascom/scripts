@@ -7,8 +7,9 @@ BROWSER=chromium
 #Threshold of CPU utilisation by browser
 THR=25
 
-#Check dpms status
-DPMS_STATUS=`xset -display :0 q | grep "DPMS is" | cut -d " " -f5`
+#Check monitor and dpms status
+MONITOR_STATUS=`xset -display :0 q | grep "Monitor is" | awk '{print $3}'`
+DPMS_STATUS=`xset -display :0 q | grep "DPMS is" | awk '{print $3}'`
 
 if [[ "$1" == "manual" ]]
 then
@@ -21,9 +22,9 @@ then
 else
     #Check status of browser
     FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "." -f1`
-    echo $FLASH_STATE >> /tmp/dpms_debug
+    #echo $FLASH_STATE >> /tmp/dpms_debug
 
-    if [ "$FLASH_STATE" != "" ]
+    if [ -n "$FLASH_STATE" ] && [ "$MONITOR_STATUS" = "On" ]
     then
         if (( "$FLASH_STATE" > "$THR" ))
         then
