@@ -25,9 +25,9 @@ then
 elif [ "$D_SHORT" = "rawhide" ]
 then
     DIST="dist-rfr-rawhide"
-#elif [ "$D_SHORT" = "17" ]
-#then
-#    DIST="dist-rfr$D_SHORT-devel"
+elif [ "$D_SHORT" = "18" ]
+then
+    DIST="dist-rfr$D_SHORT-devel"
 else
     DIST="dist-rfr$D_SHORT"
 fi

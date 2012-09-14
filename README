@@ -16,6 +16,7 @@ renswap              - swap two files
 repn                 - make many copies of text with variables
 rtl_clean_backup     - make backup of work files
 rtorrent.sh          - start screen session with rtorrent at startup
+yandex_sync          - synchronise yandex.disk with local copy
 vb_rebuild           - build VB Guest Additions for new kernel
 world_war_computing  - script for compute best price in WW game
 zipscr               - zip number of files (books for bookreader)

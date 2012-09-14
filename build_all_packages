@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Parameters
-SEQ=( 6 rawhide 15 16 17 )
+SEQ=( 6 rawhide 16 17 18 )
 SEQ_NUM=( 4 5 6 7 8 )
 NAME_FIELD=f1
 LINES_FIELD=f2
@@ -10,6 +10,7 @@ SCRATCH_FIELD=f12
 ENABLE_FIELD=f13
 SLEEP_FAST=180
 SLEEP_SLOW=10
+
 
 TASK_COUNT=0
 NUMBER_LINES=`head -n 1 $1 | cut -d "," -$LINES_FIELD`
@@ -22,7 +23,7 @@ do
     then
         NAME=`echo $n | cut -d "," -$NAME_FIELD`
         REV=`echo $n | cut -d "," -$GITREV_FIELD`
-        for ((k=0; k < 5 ; k++))
+        for ((k=0; k < "${#SEQ[@]}" ; k++))
         do
             STATE=`echo $n | cut -d "," -f${SEQ_NUM[$k]}`
             BUILD=${SEQ[$k]}
