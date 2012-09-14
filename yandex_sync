@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -e /home/vascom/yandex.disk/Documents/ ]
+then
+    rsync -avz --delete /home/vascom/yandex.disk/ /home/vascom/yandex.disk.local/
+else
+    echo "Yandex.disk not mounted yet."
+fi
