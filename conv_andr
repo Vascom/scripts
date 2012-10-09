@@ -2,6 +2,8 @@
 
 #This script resize big images for my Android device
 
+INPUT_FORMAT=JPG
+
 if [ -z "$1" -o -z "$2" ]
 then
     echo "repn: Format isn't correct!"
@@ -26,5 +28,5 @@ fi
 echo "Using $THREADS processors"
 
 echo "convert -resize $2 "$1\$@" "$1converted/\$@"" > /tmp/conv_andr_tmp
-ls -1 $1 | grep -i JPG | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
+ls -1 $1 | grep -i $INPUT_FORMAT | xargs -L1 -P$THREADS bash /tmp/conv_andr_tmp
 rm -f /tmp/conv_andr_tmp

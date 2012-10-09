@@ -9,8 +9,12 @@ then
     then
         mkdir /tmp/vb_rebuild
     fi
+    echo "Mounting Guest Addititions ISO"
     mount /dev/sr0 /tmp/vb_rebuild
     /tmp/vb_rebuild/VBoxLinuxAdditions.run
+    echo "Unmounting Guest Addititions ISO"
+    umount /tmp/vb_rebuild
+    rm -rf /tmp/vb_rebuild
 else
-    echo "You must be root for run this script"
+    echo "You must be root to run this script"
 fi

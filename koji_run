@@ -43,7 +43,7 @@ then
     exit 0
 fi
 
-if [[ -z "$3" ]]
+if [ -z "$3" ]
 then
     echo "Need first DIST_NUMBER"
 else

@@ -11,11 +11,11 @@ fi
 
 
 #WEBcam debug
-USBFS_MOUNTED=`mount | grep -c usbfs`
-if [ $USBFS_MOUNTED -ne "1" ]
-then
-    sudo mount -t usbfs none /proc/bus/usbfs
-fi
+#USBFS_MOUNTED=`mount | grep -c usbfs`
+#if [ $USBFS_MOUNTED -ne "1" ]
+#then
+#    sudo mount -t usbfs none /proc/bus/usbfs
+#fi
 
 #rtorrent start
 if [ -e /home/vascom/rt_sessions/rtorrent.lock ]
