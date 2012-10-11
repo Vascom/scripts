@@ -10,42 +10,42 @@ fi
 
 if [ "$1" = "regen" ]
 then
-    D_SHORT="$2"
+    dist_short="$2"
 else
-    D_SHORT="$3"
+    dist_short="$3"
 fi
 
 #if [ "$3" = "16" ]
 #then
-#    DIST="dist-rfr-alpha$3"
+#    dist="dist-rfr-alpha$3"
 #el
-if [ "$D_SHORT" = "6" ]
+if [ "$dist_short" = "6" ]
 then
-    DIST="dist-el$D_SHORT"
-elif [ "$D_SHORT" = "rawhide" ]
+    dist="dist-el$dist_short"
+elif [ "$dist_short" = "rawhide" ]
 then
-    DIST="dist-rfr-rawhide"
-elif [ "$D_SHORT" = "18" ]
+    dist="dist-rfr-rawhide"
+elif [ "$dist_short" = "18" ]
 then
-    DIST="dist-rfr$D_SHORT-devel"
+    dist="dist-rfr$dist_short-devel"
 else
-    DIST="dist-rfr$D_SHORT"
+    dist="dist-rfr$dist_short"
 fi
 
 if [ "$4" = "test" ]
 then
-    TEST="--scratch"
+    test="--scratch"
 fi
 
 if [ "$1" = "regen" ]
 then
-    koji -c /etc/koji-rfr.conf regen-repo $DIST-build
+    koji -c /etc/koji-rfr.conf regen-repo $dist-build
     exit 0
 fi
 
 if [ -z "$3" ]
 then
-    echo "Need first DIST_NUMBER"
+    echo "Need first dist_number"
 else
-    koji -c /etc/koji-rfr.conf build $TEST $DIST git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
+    koji -c /etc/koji-rfr.conf build $test $dist git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
 fi

@@ -12,46 +12,46 @@ SLEEP_FAST=180
 SLEEP_SLOW=10
 
 
-TASK_COUNT=0
-NUMBER_LINES=`head -n 1 $1 | cut -d "," -$LINES_FIELD`
-TEMP_LINE=`head -n $NUMBER_LINES $1 | tail -n +2`
+task_count=0
+number_lines=`head -n 1 $1 | cut -d "," -$LINES_FIELD`
+temp_line=`head -n $number_lines $1 | tail -n +2`
 
-for n in $TEMP_LINE
+for n in $temp_line
 do
-    BUILD_ENABLE=`echo $n | cut -d "," -$ENABLE_FIELD`
-    if [ "$BUILD_ENABLE" = "+" ]
+    build_enable=`echo $n | cut -d "," -$ENABLE_FIELD`
+    if [ "$build_enable" = "+" ]
     then
-        NAME=`echo $n | cut -d "," -$NAME_FIELD`
-        REV=`echo $n | cut -d "," -$GITREV_FIELD`
+        pkg_name=`echo $n | cut -d "," -$NAME_FIELD`
+        pkg_rev=`echo $n | cut -d "," -$GITREV_FIELD`
         for ((k=0; k < "${#SEQ[@]}" ; k++))
         do
-            STATE=`echo $n | cut -d "," -f${SEQ_NUM[$k]}`
-            BUILD=${SEQ[$k]}
-            if [[ "$STATE" = "-" && "$2" != "repo" ]]
+            pkg_state=`echo $n | cut -d "," -f${SEQ_NUM[$k]}`
+            build=${SEQ[$k]}
+            if [[ "$pkg_state" = "-" && "$2" != "repo" ]]
             then
-                SCRATCH=`echo $n | cut -d "," -$SCRATCH_FIELD`
-                if [[ "$SCRATCH" = "-" || "$2" = "test" ]]
+                scratch=`echo $n | cut -d "," -$SCRATCH_FIELD`
+                if [[ "$scratch" = "-" || "$2" = "test" ]]
                 then
-                    TEST="test"
+                    scratch_build="test"
                 else
-                    TEST=""
+                    scratch_build=""
                 fi
 
-                echo "Building $NAME $BUILD"
-                ./koji_run $NAME $REV $BUILD $TEST
+                echo "Building $pkg_name $build"
+                ./koji_run $pkg_name $pkg_rev $build $scratch_build
 
-                if [ $TASK_COUNT -lt 3 ]
+                if [ $task_count -lt 3 ]
                 then sleep $SLEEP_FAST
                 else sleep $SLEEP_SLOW
                 fi
-                TASK_COUNT=`expr $TASK_COUNT + 1`
-            elif [[ ("$STATE" = '+' || "$STATE" = 'b+') && "$2" = "repo"  ]]
+                task_count=`expr $task_count + 1`
+            elif [[ ("$pkg_state" = '+' || "$pkg_state" = 'b+') && "$2" = "repo"  ]]
             then
-                REPONUM=`expr $k + 3`
-                INREPO=`echo $n | cut -d "," -f$REPONUM`
-                if [[ "$INREPO" = "-" ]]
+                reponum=`expr $k + 3`
+                inrepo=`echo $n | cut -d "," -f$reponum`
+                if [[ "$inrepo" = "-" ]]
                 then
-                    echo "$NAME not in repo $BUILD"
+                    echo "$pkg_name not in repo $build"
                 fi
             fi
         done
