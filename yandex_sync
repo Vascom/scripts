@@ -2,7 +2,7 @@
 
 if [ -e /home/vascom/yandex.disk/Documents/ ]
 then
-    rsync -az --delete /home/vascom/yandex.disk/ /home/vascom/yandex.disk.local/
+    rsync -azsS --delete /home/vascom/yandex.disk/ /home/vascom/yandex.disk.local/
 #else
     #echo "Yandex.disk not mounted yet."
     #sudo mount yandex.disk

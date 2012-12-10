@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #HTTP bind
-if [ ! -e /var/www/lighttpd/downloads/list ]
-then
-    sudo mount --bind /home/vascom/Загрузки /var/www/lighttpd/downloads/
-    sudo mount -o remount,ro /var/www/lighttpd/downloads/
-fi
+#if [ ! -e /var/www/lighttpd/downloads/list ]
+#then
+#    sudo mount --bind /home/vascom/Загрузки /var/www/lighttpd/downloads/
+#    sudo mount -o remount,ro /var/www/lighttpd/downloads/
+#fi
 
 #FTP start
 

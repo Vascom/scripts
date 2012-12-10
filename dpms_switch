@@ -5,7 +5,14 @@ DPMS="dpms -display :0"
 #Controlling browser
 BROWSER=chrome
 #Threshold of CPU utilisation by browser
-THR=35
+THR=30
+
+if [[ $HOSTNAME == milkyway ]]
+then 
+    delim="."
+else
+    delim="."
+fi
 
 #Check monitor and dpms status
 MONITOR_STATUS=`xset -display :0 q | grep "Monitor is" | awk '{print $3}'`
@@ -22,7 +29,7 @@ then
     fi
 else
     #Check status of browser
-    FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "." -f1`
+    FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "$delim" -f1`
     DATE=`date`
     echo "$DATE $FLASH_STATE $MONITOR_STATUS $DPMS_STATUS" >> /tmp/dpms_debug
     #echo $FLASH_STATE
@@ -30,11 +37,12 @@ else
     #echo $DPMS_STATUS
     if [ -n "$FLASH_STATE" ] && [ "$MONITOR_STATUS" = "On" ]
     then
-        if (( "$FLASH_STATE" > "$THR" ))
+        if [ "$FLASH_STATE" -gt "$THR" ]
         then
             if [[ "$DPMS_STATUS" == "Enabled" ]]
             then
                 xset -$DPMS
+#echo aa
             fi
         else
             if [[ "$DPMS_STATUS" == "Disabled" ]]

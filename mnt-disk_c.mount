@@ -1,0 +1,11 @@
+[Unit]
+Description=Mount old windows partition
+ 
+[Mount]
+What=UUID=4814D00D14CFFC3E
+Where=/mnt/disk_c
+Type=ntfs-3g
+
+[Install]
+WantedBy=multi-user.target
+

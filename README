@@ -12,6 +12,7 @@ javad-gnss.conf      - config for AVT2 board USB-COM module support
 koji_run             - run koji build process
 mail.sh              - send email via script when computer start
 quartus_programmer   - desktop-file for Quartus Programmer
+radio                - run radio on si470x
 renswap              - swap two files
 repn                 - make many copies of text with variables
 rtl_clean_backup     - make backup of work files

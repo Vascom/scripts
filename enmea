@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# function parallel() {
+#     sleep "$1"
+#     echo p$2
+#     exit "$2"
+# }
+# 
+# 
+# parallel 3 1 &
+# parallel 6 2 &
+# wait
+# echo end
+
+#exit
+
 if [ -z "$1" -o -z "$2" ]
 then
     echo "Format isn't correct!"
@@ -8,125 +22,203 @@ then
     exit
 fi
 
+if [ -e "$2" ]
+then
+    echo -n "File $2 exist, rewrite it? (Y/n) "
+    read item
+    case "$item" in
+        y|Y) echo "Start processing..."
+            ;;
+        n|N) echo "Exit"
+            exit 0
+            ;;
+        *)  echo "Start processing..."
+            ;;
+    esac
+fi
+
 IN_FILE_LIST=$1
 GGA_decode_counter=0
 GSV_decode_counter=0
 unknown_decode_counter=0
 sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
 sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+start_work=0
 
 total_GGA=`grep -c GGA "$1"`
 # message_time_PRE=`cat $IN_FILE_LIST | grep GPGGA -m 1 | cut -d "," -f2 | cut -d "." -f1`
 # message_time=`expr $message_time_PRE - 1`
 
 function number_to_decimal() {
-    if [ "$sv_number" == "08" ] || [ "$sv_number" == "09" ]
+    local sv
+    if [ "$1" == "08" ] || [ "$1" == "09" ]
     then
-        sv_number=`expr $sv_number + 0`
+        sv=`expr "$1" + 0`
+    else
+        sv=$1
     fi
+    echo $sv
+    
+#     elif [ "$sv_number" -gt "32" ]
+#     then
+#         echo "Anomal SV $sv_number at $message_time"
+#     fi
 }
 
 function number_check() {
-    if [ -z "${sat_v[$1]}" ]
+    local nc
+    if [ -z "$1" ]
     then
-        sat_v[$1]=0
+        nc=0
     else
-        sat_v_notnull[$1]=${sat_v[$1]}
+        nc=$1
     fi
+    echo $nc
 }
 
+if [[ -z "$4" || $4 == 0 ]]
+then
+    THREADS=`cat /proc/cpuinfo | grep -c processor`
+else
+    THREADS=$4
+fi
+echo "Using $THREADS processors"
+
 #rm -rf /tmp/nmea/log
-FILE_IN=`cat $IN_FILE_LIST`
+#FILE_IN=`grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1`
+#echo "$FILE_IN" | sed 's/,/\ /g'
+#echo "$FILE_IN" | head
+#exit 0
 
-for one_string in `echo "$FILE_IN"`
-do
-    navmes=`echo "$one_string" | cut -d "," -f1`
-    if [ "$navmes" == "\$GPGGA" ]
-    then
-        #message_time_H=`echo "$one_string" | cut -c8,9`
-        #message_time_M=`echo "$one_string" | cut -c9,10`
-        #message_time_S=`echo "$one_string" | cut -c11,12`
-        #message_time=`expr $message_time_H * 3600 + $message_time_M * 60 + $message_time_S`
-        message_time=`echo "$one_string" | cut -d "," -f2 | cut -d "." -f1`
+grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1 > /tmp/nmea
+pushd /tmp
+string_count=`wc -l nmea | awk '{print $1}'`
+strings_in_file=`expr $string_count / $THREADS`
+split nmea -d -l $strings_in_file
+string_overhead_0=`grep GGA x01 -m 1 -n | cut -d ":" -f1`
+string_overhead_1=`expr $string_overhead_0 - 1`
+head -n $string_overhead_1 x01 >> x00
+tail -n +$string_overhead_0 x01 > x01_tmp
+popd
 
-        #LATITUDE=`echo "$one_string" | cut -d "," -f3`
-        #N_S=`echo "$one_string" | cut -d "," -f4`
-        #LONGITUDE=`echo "$one_string" | cut -d "," -f5`
-        #E_W=`echo "$one_string" | cut -d "," -f6`
-        #GPS_QUALITY=`echo "$one_string" | cut -d "," -f7`
-        #TOTAL_SATELLITES=`echo "$one_string" | cut -d "," -f8`
-        hdop=`echo "$one_string" | cut -d "," -f9`
-        if [ -z "$hdop" ]
+
+rm -f "$2"
+
+function part_processing() {
+    local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+    local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+    rm -f "$2"
+    local navmes
+    local message_time
+    local hdop
+    local GGA_decode_counter
+    local total_messages
+    local message_number
+    local sv_number
+
+    local FILE_IN=`grep -E "GGA|GSV" $1  | cut -d "*" -f1`
+    #echo "$FILE_IN" | tail
+    for one_string in `echo "$FILE_IN"`
+    do
+    #echo $one_string
+    #awk '{print $1}'  | sed 's/,/\ /g'
+        #one_string=`echo "$one_string"`
+        navmes=`echo "$one_string" | cut -d "," -f1 `
+        if [ "$navmes" == "\$GPGGA" ]
         then
-            hdop=0
-        fi
-        #ALTITUDE=`echo "$one_string" | cut -d "," -f10`
-        #ALTITUDE_UNITS=`echo "$one_string" | cut -d "," -f11`
-        #GEOIDAL_SEPARATION=`echo "$one_string" | cut -d "," -f12`
-        #GEOIDAL_SEPARATION_UNITS=`echo "$one_string" | cut -d "," -f13`
-        #message_time=`echo "$one_string" | cut -d "," -f14`
-        #message_time=`echo "$one_string" | cut -d "," -f15`
-        #message_time=`echo "$one_string" | cut -d "," -f16`
-        GGA_decode_counter=`expr $GGA_decode_counter + 1`
-        #sat_v contain 33 vars: message_time + 32 satellites
-        sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+            #message_time_H=`echo "$one_string" | cut -c8,9`
+            #message_time_M=`echo "$one_string" | cut -c9,10`
+            #message_time_S=`echo "$one_string" | cut -c11,12`
+            #message_time=`expr $message_time_H * 3600 + $message_time_M * 60 + $message_time_S`
+            message_time=`echo "$one_string" | cut -d "," -f2 | cut -d "." -f1`
 
-        if [ -z "$3" ]
+            #LATITUDE=`echo "$one_string" | cut -d "," -f3`
+            #N_S=`echo "$one_string" | cut -d "," -f4`
+            #LONGITUDE=`echo "$one_string" | cut -d "," -f5`
+            #E_W=`echo "$one_string" | cut -d "," -f6`
+            #GPS_QUALITY=`echo "$one_string" | cut -d "," -f7`
+            #TOTAL_SATELLITES=`echo "$one_string" | cut -d "," -f8`
+            hdop=`echo "$one_string" | cut -d "," -f9`
+            if [ -z "$hdop" ]
+            then
+                hdop=0
+            fi
+            #ALTITUDE=`echo "$one_string" | cut -d "," -f10`
+            #ALTITUDE_UNITS=`echo "$one_string" | cut -d "," -f11`
+            #GEOIDAL_SEPARATION=`echo "$one_string" | cut -d "," -f12`
+            #GEOIDAL_SEPARATION_UNITS=`echo "$one_string" | cut -d "," -f13`
+            #message_time=`echo "$one_string" | cut -d "," -f14`
+            #message_time=`echo "$one_string" | cut -d "," -f15`
+            #message_time=`echo "$one_string" | cut -d "," -f16`
+            GGA_decode_counter=`expr $GGA_decode_counter + 1`
+            #sat_v contain 33 vars: message_time + 32 satellites
+            sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+
+            if [ -z "$3" ]
+            then
+                echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
+            fi
+        elif [ "$navmes" == "\$GPGSV" ]
         then
-            echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
-        fi
-    elif [ "$navmes" == "\$GPGSV" ]
-    then
-        total_messages=`echo "$one_string" | cut -d "," -f2`
-        message_number=`echo "$one_string" | cut -d "," -f3`
-#         TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
+            total_messages=`echo "$one_string" | cut -d "," -f2`
+            message_number=`echo "$one_string" | cut -d "," -f3`
+    #         TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
 
-        sv_number=`echo "$one_string" | cut -d "," -f5`
-        number_to_decimal
-#             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
-#             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
-        sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f8 | cut -d "*" -f1`
-        number_check $sv_number
+            sv_number=`echo "$one_string" | cut -d "," -f5`
+            #echo $sv_number 1
+            sv_number=`number_to_decimal $sv_number`
+            #echo $sv_number 2
+    #             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
+    #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
+            sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f8`
+            sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
-        sv_number=`echo "$one_string" | cut -d "," -f9`
-        number_to_decimal
-        if [ -n "$sv_number" ]
-        then
-            sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f12 | cut -d "*" -f1`
-            number_check $sv_number
-
-            sv_number=`echo "$one_string" | cut -d "," -f13`
-            number_to_decimal
+            #echo $sv_number 3
+            #exit
+            sv_number=`echo "$one_string" | cut -d "," -f9`
             if [ -n "$sv_number" ]
             then
-                sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f16 | cut -d "*" -f1`
-                number_check $sv_number
+                sv_number=`number_to_decimal $sv_number`
+                sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f12`
+                sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
-                sv_number=`echo "$one_string" | cut -d "," -f17`
-                number_to_decimal
+                sv_number=`echo "$one_string" | cut -d "," -f13`
                 if [ -n "$sv_number" ]
                 then
-                    sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f20 | cut -d "*" -f1`
-                    number_check $sv_number
+                    sv_number=`number_to_decimal $sv_number`
+                    sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f16`
+                    sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+
+                    sv_number=`echo "$one_string" | cut -d "," -f17`
+                    if [ -n "$sv_number" ]
+                    then
+                        sv_number=`number_to_decimal $sv_number`
+                        sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f20`
+                        sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+                    fi
                 fi
             fi
+
+            if [ "$total_messages" == "$message_number" ]
+            then
+                sat_v[0]=$message_time
+                echo "${sat_v[@]} $hdop" >> "$2"
+                #/home/vascom/sat/log
+            fi
+
+            #GSV_decode_counter=`expr $GSV_decode_counter + 1`
+        else
+            echo -n ""
+            #echo "Unknown Navigation message"
+            #$unknown_decode_counter=`expr $unknown_decode_counter + 1`
         fi
+    done
+}
 
-        if [ "$total_messages" == "$message_number" ]
-        then
-            sat_v[0]=$message_time
-            echo "${sat_v[@]} $hdop" >> "$2"
-            #/home/vascom/sat/log
-        fi
-
-        #GSV_decode_counter=`expr $GSV_decode_counter + 1`
-    else
-        echo -n ""
-        #echo "Unknown Navigation message"
-        #$unknown_decode_counter=`expr $unknown_decode_counter + 1`
-    fi
-done
-
+part_processing /tmp/x00 /tmp/nmea_decode_0 1 &
+part_processing /tmp/x01_tmp /tmp/nmea_decode_1 1 &
+wait
+cat /tmp/nmea_decode_0 /tmp/nmea_decode_1 > "$2"
 #echo -e "\nGSV: $GSV_decode_counter"
 if [ -n "$3" ]
 then
