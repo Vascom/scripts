@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [ $# -ne 1 ] || [[ "$1" == "help" ]]
+then
+    echo -ne "Radio stations:
+    1 - rufm    - 94.8
+    2 - rockfm  - 95.2
+    3 - record  - 98.4
+    4 - bestfm  - 100.5
+    5 - comedy  - 102.5
+    6 - maximum - 103.7
+    7 - moscow  - 105.2
+    8 - europa  - 106.2
+    9 - hitfm   - 107.4
+    \rSelect one or enter frequency: "
+    read station
+else
+    station=$1
+fi
+
+case "$station" in
+    rufm)   freq="94.8";
+            ;;
+    rockfm) freq="95.2";
+            ;;
+    record) freq="98.4";
+            ;;
+    bestfm) freq="100.5";
+            ;;
+    comedy) freq="102.5";
+            ;;
+    maximum) freq="103.7";
+            ;;
+    moscow) freq="105.2";
+            ;;
+    europa) freq="106.2";
+            ;;
+    hitfm)  freq="107.4";
+            ;;
+    1)  freq="94.8";
+            ;;
+    2)  freq="95.2";
+            ;;
+    3)  freq="98.4";
+            ;;
+    4)  freq="100.5";
+            ;;
+    5)  freq="102.5";
+            ;;
+    6)  freq="103.7";
+            ;;
+    7)  freq="105.2";
+            ;;
+    8)  freq="106.2";
+            ;;
+    9)  freq="107.4";
+            ;;
+    *)  freq="$station";
+            ;;
+        esac
+
+mplayer -radio adevice=hw=1.0:arate=96000 -rawaudio rate=96000 radio://${freq}/capture
+#-really-quiet 
