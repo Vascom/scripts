@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#crontab -e
+#*/9 * * * * bash /home/vascom/Dropbox/github/scripts/dpms_switch
 DPMS="dpms -display :0"
 
 #Controlling browser
@@ -7,7 +9,7 @@ BROWSER=chrome
 #Threshold of CPU utilisation by browser
 THR=30
 
-if [[ $HOSTNAME == milkyway ]]
+if [[ $HOSTNAME == milkyway.vascomdomain ]]
 then 
     delim="."
 else
