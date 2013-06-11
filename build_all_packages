@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #Parameters
-SEQ=( 6 rawhide 16 17 18 )
+SEQ=( 6 rawhide 17 18 19 )
 SEQ_NUM=( 4 5 6 7 8 )
 NAME_FIELD=f1
 LINES_FIELD=f2
 GITREV_FIELD=f3
 SCRATCH_FIELD=f12
 ENABLE_FIELD=f13
-SLEEP_FAST=180
-SLEEP_SLOW=10
+SLEEP_FAST=300
+SLEEP_SLOW=30
 
 
 task_count=0
