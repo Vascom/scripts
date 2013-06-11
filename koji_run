@@ -25,7 +25,7 @@ then
 elif [ "$dist_short" = "rawhide" ]
 then
     dist="dist-rfr-rawhide"
-elif [ "$dist_short" = "18" ]
+elif [ "$dist_short" = "19" ]
 then
     dist="dist-rfr$dist_short-devel"
 else
