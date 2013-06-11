@@ -9,9 +9,14 @@ alias ylist='sudo yum list'
 alias xstop='sleep 5; xset dpms force off'
 alias cleangithub='find /home/vascom/Dropbox/github/ -name "*.[gbx]*[z2]" -delete'
 alias koji-rfr='koji -c /etc/koji-rfr.conf'
+alias rsynccopy="rsync --partial --progress --append -r -h "
+alias rsyncmove="rsync --partial --progress --append -r -h --remove-sent-files"
 
 alias quartus='quartus --64bit'
 alias systech5mount='sshfs systech5:/home/vglazov /mnt/systech5'
 alias systech6mount='sshfs systech6:/home/vglazov /mnt/systech6'
 alias systech7mount='sshfs systech7:/home/vglazov /mnt/systech7'
 sudo modprobe ftdi_sio vendor=0x1a46 product=0x0001 debug=1
+
+export HISTSIZE=10000
+export EDITOR=/usr/bin/nano
