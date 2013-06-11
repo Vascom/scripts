@@ -57,7 +57,7 @@ case "$station" in
             ;;
     *)  freq="$station";
             ;;
-        esac
+esac
 
-mplayer -radio adevice=hw=1.0:arate=96000 -rawaudio rate=96000 radio://${freq}/capture
+mplayer -radio adevice=hw=3.0:arate=96000 -rawaudio rate=96000 radio://${freq}/capture
 #-really-quiet 
