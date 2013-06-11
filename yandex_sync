@@ -1,8 +1,19 @@
 #!/bin/bash
 
-if [ -e /home/vascom/yandex.disk/Documents/ ]
+#crontab -e
+#0 */1 * * * bash /home/vascom/Dropbox/github/scripts/yandex_sync
+if [ -z "$1" ]
 then
-    rsync -azsS --delete /home/vascom/yandex.disk/ /home/vascom/yandex.disk.local/
+    local_directory="/home/vascom/local.yandex.disk/"
+else
+    local_directory="$1"
+fi
+remote_directory="/home/vascom/yandex.disk/"
+
+
+if [ -e $remote_directory/Documents/ ] && [ -e "$local_directory" ]
+then
+    rsync -azsS --delete "$remote_directory" "$local_directory"
 #else
     #echo "Yandex.disk not mounted yet."
     #sudo mount yandex.disk
