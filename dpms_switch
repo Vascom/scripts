@@ -11,9 +11,9 @@ THR=30
 
 if [[ $HOSTNAME == milkyway.vascomdomain ]]
 then 
-    delim="."
+    delim=","
 else
-    delim="."
+    delim=","
 fi
 
 #Check monitor and dpms status

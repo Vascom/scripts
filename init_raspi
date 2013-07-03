@@ -1,0 +1,63 @@
+#!/bin/bash
+
+yd_remote_directory="/home/vascom/yandex.disk/"
+yd_pid_file="/var/run/mount.davfs/home-vascom-yandex.disk.pid"
+cd_pid_file="/var/run/chronyd.pid"
+
+function yandex_disk_check() {
+    if [ ! -e $yd_remote_directory/Documents/ ]
+    then
+        if [ -e $yd_pid_file ]
+        then
+            sudo rm -rf $yd_pid_file
+        fi
+        sudo systemctl start home-vascom-yandex.disk.mount
+        echo "yandex.disk mounted"
+    fi
+}
+
+chrony_status=`systemctl status chronyd | grep failed -c`
+if [ $chrony_status -ne 0 ]
+then
+    sudo rm -f $cd_pid_file
+    sudo systemctl restart chronyd
+    echo "chronyd restarted"
+    sleep 10
+fi
+
+yandex_disk_check
+
+dev_sda1="/dev/disk/by-uuid/7a1bd51b-00d9-4c1c-88d0-9e987097af4e"
+dev_sdb1="/dev/disk/by-uuid/acdb5d2e-3a7e-435f-ad53-e999a4723b51"
+
+if [ -e $dev_sdb1 ]
+then 
+    sudo mount $dev_sdb1 sdb1/
+    echo "sdb1 mounted"
+fi
+
+if [ -e $dev_sda1 ]
+then
+    sudo mount $dev_sda1 sda1/
+    sudo mount --bind sda1/downloads downloads/
+    sudo mount --bind downloads/ /var/www/lighttpd/downloads
+    sudo mount --bind downloads/ /var/ftp/downloads/
+    echo "sda1 mounted"
+else
+    echo "Error: sda1 not connected"
+fi
+
+ftp_status=`ps aux | grep pure-ftpd -c`
+if [ $ftp_status -lt 2 ]
+then
+    sudo pure-ftpd -4 -c 10 -C 5 -i -l unix -p 50000:60000 -P vascom.myftp.org -S 8021 -B
+    echo "FTP started"
+fi
+
+nfs_status=`systemctl status nfs | grep failed -c`
+if [ $nfs_status -eq 1 ]
+then
+    sudo systemctl start nfs
+    echo "NFS started"
+fi
+
