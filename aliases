@@ -17,6 +17,7 @@ alias systech5mount='sshfs systech5:/home/vglazov /mnt/systech5'
 alias systech6mount='sshfs systech6:/home/vglazov /mnt/systech6'
 alias systech7mount='sshfs systech7:/home/vglazov /mnt/systech7'
 sudo modprobe ftdi_sio vendor=0x1a46 product=0x0001 debug=1
+#echo -n "1a46 0000" | sudo tee /sys/bus/usb-serial/drivers/generic/new_id
 
 export HISTSIZE=10000
 export EDITOR=/usr/bin/nano

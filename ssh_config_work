@@ -1,0 +1,7 @@
+#~/.ssh/config
+
+Host systech*
+    User vglazov
+
+Host vascom.myftp.org
+    ForwardX11 yes

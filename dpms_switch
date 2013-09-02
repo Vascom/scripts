@@ -7,7 +7,7 @@ DPMS="dpms -display :0"
 #Controlling browser
 BROWSER=chrome
 #Threshold of CPU utilisation by browser
-THR=30
+THR=25
 
 if [[ $HOSTNAME == milkyway.vascomdomain ]]
 then 
@@ -17,9 +17,10 @@ else
 fi
 
 #Check monitor and dpms status
-MONITOR_STATUS=`xset -display :0 q | grep "Monitor is" | awk '{print $3}'`
+ALL_STATUS=`xset -display :0 q`
+MONITOR_STATUS=`echo "$ALL_STATUS" | grep "Monitor is" | awk '{print $3}'`
 MONITOR_STATUS="On"
-DPMS_STATUS=`xset -display :0 q | grep "DPMS is" | awk '{print $3}'`
+DPMS_STATUS=`echo "$ALL_STATUS" | grep "DPMS is" | awk '{print $3}'`
 
 if [[ "$1" == "manual" ]]
 then
@@ -32,8 +33,7 @@ then
 else
     #Check status of browser
     FLASH_STATE=`top -b -n 1 | grep $BROWSER -m 1 | awk '{print $9}' | cut -d "$delim" -f1`
-    DATE=`date`
-    echo "$DATE $FLASH_STATE $MONITOR_STATUS $DPMS_STATUS" >> /tmp/dpms_debug
+    echo "`date` $FLASH_STATE $MONITOR_STATUS $DPMS_STATUS" >> /tmp/dpms_debug
     #echo $FLASH_STATE
     #echo $MONITOR_STATUS
     #echo $DPMS_STATUS

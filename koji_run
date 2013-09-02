@@ -27,7 +27,8 @@ then
     dist="dist-rfr-rawhide"
 elif [ "$dist_short" = "19" ]
 then
-    dist="dist-rfr$dist_short-devel"
+    #dist="dist-rfr$dist_short-devel"
+    dist="dist-rfr$dist_short"
 else
     dist="dist-rfr$dist_short"
 fi
@@ -47,5 +48,5 @@ if [ -z "$3" ]
 then
     echo "Need first dist_number"
 else
-    koji -c /etc/koji-rfr.conf build $test $dist git://github.com/RussianFedora/$1.git?#$2 &>/dev/null &
+    koji -c /etc/koji-rfr.conf build $test $dist git://github.com/RussianFedora/$1.git?#$2
 fi

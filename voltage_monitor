@@ -1,0 +1,10 @@
+#!/bin/bash
+
+full_data=`/usr/sbin/apcaccess status localhost:3551`
+
+date=`date +"%D %R %s"`
+linev=`echo "$full_data" | grep LINEV | awk '{print $3}'`
+loadpct=`echo "$full_data" | grep LOADPCT | awk '{print $3}'`
+bcharge=`echo "$full_data" | grep BCHARGE | awk '{print $3}'`
+
+echo "$date $linev $loadpct $bcharge" >> /home/vascom/voltage.log

@@ -10,8 +10,8 @@ else
 fi
 remote_directory="/home/vascom/yandex.disk/"
 
-
-if [ -e $remote_directory/Documents/ ] && [ -e "$local_directory" ]
+sync_status=`top -b -n 1 | grep rsync`
+if [ -e $remote_directory/Documents/ ] && [ -e "$local_directory" ] && [ -z "$sync_status" ]
 then
     rsync -azsS --delete "$remote_directory" "$local_directory"
 #else
