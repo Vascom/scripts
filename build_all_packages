@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #Parameters
-SEQ=( 6 rawhide 17 18 19 )
-SEQ_NUM=( 4 5 6 7 8 )
+SEQ=( 6 rawhide 20 19 )
+SEQ_NUM=( 4 5 6 7 )
 NAME_FIELD=f1
 LINES_FIELD=f2
 GITREV_FIELD=f3
@@ -19,14 +19,17 @@ temp_line=`head -n $number_lines $1 | tail -n +2`
 for n in $temp_line
 do
     build_enable=`echo $n | cut -d "," -$ENABLE_FIELD`
+    #echo $build_enable $n
     if [ "$build_enable" = "+" ]
     then
         pkg_name=`echo $n | cut -d "," -$NAME_FIELD`
         pkg_rev=`echo $n | cut -d "," -$GITREV_FIELD`
+        #echo $pkg_name $pkg_rev
         for ((k=0; k < "${#SEQ[@]}" ; k++))
         do
             pkg_state=`echo $n | cut -d "," -f${SEQ_NUM[$k]}`
             build=${SEQ[$k]}
+            #echo $pkg_name $pkg_state
             if [[ "$pkg_state" = "-" && "$2" != "repo" ]]
             then
                 scratch=`echo $n | cut -d "," -$SCRATCH_FIELD`
@@ -38,7 +41,7 @@ do
                 fi
 
                 echo "Building $pkg_name $build"
-                ./koji_run $pkg_name $pkg_rev $build $scratch_build
+                ./koji_run $pkg_name $pkg_rev $build $scratch_build quiet
 
                 if [ $task_count -lt 3 ]
                 then sleep $SLEEP_FAST
