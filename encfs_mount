@@ -1,0 +1,6 @@
+#!/bin/bash
+
+secure_section_from="/home/vascom/yandex.disk/.secure/"
+secure_section_to="/home/vascom/secure"
+
+encfs $secure_section_from $secure_section_to
