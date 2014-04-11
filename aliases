@@ -11,6 +11,8 @@ alias cleangithub='find /home/vascom/Dropbox/github/ -name "*.[gbx]*[z2]" -delet
 alias koji-rfr='koji -c /etc/koji-rfr.conf'
 alias rsynccopy="rsync --partial --progress --append -r -h "
 alias rsyncmove="rsync --partial --progress --append -r -h --remove-sent-files"
+alias sync_public="touch /home/vascom/yandex.disk/public_pictures/sync"
+alias external_ip="wget -qO- http://internet.yandex.ru/ | grep IPv4 | awk '{print $3}'"
 
 alias quartus='quartus --64bit'
 alias systech5mount='sshfs systech5:/home/vglazov /mnt/systech5'
