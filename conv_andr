@@ -8,7 +8,7 @@ if [ -z "$1" -o -z "$2" ]
 then
     echo "repn: Format isn't correct!"
     echo "repn: Use conv_andr path_to_photos/ format number_of_threads"
-    echo "where format - 480x320 or scaled"
+    echo "where format - 480x320 or scaled, use 800x800 for max length/heigth"
     echo "Converted images will stored in path_to_photos/converted"
     echo "If number_of_threads not entered then using all system processors"
     exit
