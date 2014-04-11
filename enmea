@@ -92,13 +92,13 @@ echo "Using $THREADS processors"
 
 grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1 > /tmp/nmea
 pushd /tmp
-string_count=`wc -l nmea | awk '{print $1}'`
-strings_in_file=`expr $string_count / $THREADS`
-split nmea -d -l $strings_in_file
-string_overhead_0=`grep GGA x01 -m 1 -n | cut -d ":" -f1`
-string_overhead_1=`expr $string_overhead_0 - 1`
-head -n $string_overhead_1 x01 >> x00
-tail -n +$string_overhead_0 x01 > x01_tmp
+    string_count=`wc -l nmea | awk '{print $1}'`
+    strings_in_file=`expr $string_count / $THREADS`
+    split nmea -d -l $strings_in_file
+    string_overhead_0=`grep GGA x01 -m 1 -n | cut -d ":" -f1`
+    string_overhead_1=`expr $string_overhead_0 - 1`
+    head -n $string_overhead_1 x01 >> x00
+    tail -n +$string_overhead_0 x01 > x01_tmp
 popd
 
 
