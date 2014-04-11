@@ -1,6 +1,9 @@
 #!/bin/bash
 
 yd_remote_directory="/home/vascom/yandex.disk/"
+gd_remote_directory="/home/vascom/google.drive/"
+secure_section_from="/home/vascom/yandex.disk/.secure/"
+secure_section_to="/home/vascom/secure"
 yd_pid_file="/var/run/mount.davfs/home-vascom-yandex.disk.pid"
 cd_pid_file="/var/run/chronyd.pid"
 cronyd_delay=10
@@ -10,6 +13,20 @@ dev_sdb1="/dev/disk/by-uuid/acdb5d2e-3a7e-435f-ad53-e999a4723b51"
 sda1_mountpoint="/home/vascom/sda1"
 sdb1_mountpoint="/home/vascom/sdb1"
 sda1_mounted="$sda1_mountpoint/downloads"
+
+function secure_section() {
+    if [ ! -e $secure_section_to/kva/ ]
+    then
+        echo -n "Mount secure section? (Y/n) "
+        read item
+        case "$item" in
+            y|Y|"") encfs $secure_section_from $secure_section_to
+                ;;
+            *) echo "Exit"
+                ;;
+        esac
+    fi
+}
 
 function yandex_disk_check() {
     if [ ! -e $yd_remote_directory/Documents/ ]
@@ -21,11 +38,11 @@ function yandex_disk_check() {
         sudo systemctl start home-vascom-yandex.disk.mount
         echo "yandex.disk mounted"
     fi
+    secure_section
 }
 
 function chronyd_check(){
-    chrony_status=`systemctl status chronyd | grep failed -c`
-    if [ $chrony_status -ne 0 ]
+    if ! systemctl status chronyd &>/dev/null
     then
         sudo rm -f $cd_pid_file
         sudo systemctl restart chronyd
@@ -47,14 +64,26 @@ function disks_mount_check(){
         then
             sudo mount $dev_sda1 $sda1_mountpoint
             sudo mount --bind $sda1_mountpoint/downloads downloads/
-            sudo mount --bind downloads/ /var/www/lighttpd/downloads
-            sudo mount --bind downloads/ /var/ftp/downloads/
+#             sudo mount --bind downloads/ /var/www/lighttpd/downloads
+#             sudo mount --bind downloads/ /var/ftp/downloads/
+#             sudo mount --bind public_misc/ /var/www/lighttpd/misc/pictures/
             echo "sda1 mounted"
         else
             echo "sda1 already mounted"
         fi
     else
         echo "Error: sda1 not connected"
+    fi
+    sudo mount --bind downloads/ /var/www/lighttpd/downloads
+    sudo mount --bind downloads/ /var/ftp/downloads/
+    sudo mount --bind public_misc/ /var/www/lighttpd/misc/pictures/
+}
+
+function google_mount(){
+    if [ ! -e $gd_remote_directory/Documents/ ]
+    then
+        google-drive-ocamlfuse google.drive
+        echo "Google.Drive mounted"
     fi
 }
 
@@ -70,8 +99,7 @@ function ftp_check(){
 }
 
 function nfs_check(){
-    nfs_status=`systemctl status nfs | grep failed -c`
-    if [ $nfs_status -eq 1 ]
+    if ! systemctl status nfs &>/dev/null
     then
         sudo systemctl start nfs
         echo "NFS started"
@@ -80,6 +108,11 @@ function nfs_check(){
 
 chronyd_check
 yandex_disk_check
+google_mount
 disks_mount_check
 ftp_check
 nfs_check
+
+#fuse-zip -o allow_other russianfedora.pro.zip /var/www/lighttpd/misc/sites
+#cd /var/www/lighttpd/misc/sites
+#wget -r -k -l 4 -p -E -nc -np http://russianfedora.pro/logs/
