@@ -1,0 +1,28 @@
+#!/bin/bash
+
+DATE=`date -u | cut -d " " -f4 | cut -d ":" -f1,2`
+HHMM=`echo "$DATE" | sed -e 's/://'`
+
+FILE_IN=`grep R "$1" | grep -E "RUS|EEu" | grep -E -v "Volmet|DIGITAL|AutoRadioKlub" | sed -e 's/\ /_/g'`
+
+echo "prosessing..."
+for one_string in `echo "$FILE_IN"`
+do
+    LANG=`echo "$one_string" | cut -d ";" -f6`
+    if [ "$LANG" == "R" ]
+    then
+        TIME1=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f1`
+        TIME2=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f2`
+        
+        if [ "$HHMM" -ge "$TIME1" ] && [ "$HHMM" -le "$TIME2" ]
+        then
+            REGION=`echo "$one_string" | cut -d ";" -f7`
+            if [ "$REGION" == "RUS" ] || [ "$REGION" == "EEu" ]
+            then
+                FREQ=`echo "$one_string" | cut -d ";" -f1`
+                NAME=`echo "$one_string" | cut -d ";" -f5`
+                echo "Freq: $FREQ; $NAME for $REGION, from $TIME1 to $TIME2"
+            fi
+        fi
+    fi
+done
