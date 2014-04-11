@@ -1,9 +1,9 @@
 [Unit]
-Description=Mount my yandex.disk  
-Requires=network.target   
-After=network.target 
+Description=Mount my yandex.disk
+Requires=network.target
+After=network.target
 After=remote-fs.target
- 
+
 [Mount]
 What="https://webdav.yandex.ru/"
 Where=/home/vascom/yandex.disk
@@ -13,4 +13,3 @@ TimeoutSec=600
 
 [Install]
 WantedBy=multi-user.target
-

@@ -5,7 +5,7 @@ After=network.target
 After=remote-fs.target
  
 [Mount]
-What=172.17.0.205:/sas
+What=172.17.0.205:/home/vglazov
 Where=/home/vascom/asictm
 Type=nfs4
 #Options=vers=4,rw
