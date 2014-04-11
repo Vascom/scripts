@@ -4,19 +4,22 @@ data_raw=`tail -n +8 $1 | sed "s| |\,|g"`
 
 for line in `echo "$data_raw"`
 do
-    cic=`echo $line | cut -d "," -f1,2,3,4,5,6`
-    fs_div=`echo $line | cut -d "," -f7`
-    f_pass_pre=`echo $line | cut -d "," -f8`
-    f_pass=`echo "$f_pass_pre * 2" | bc`
-    real_complex_pre=`echo $line | cut -d "," -f11`
-    if [ $real_complex_pre -eq 0 ]; then
-        real_complex="real"
-    else
-        real_complex="complex"
-    fi
-    fir=`echo $line | cut -d "," -f12,13,14,15,16,17,18,19,20,21,22,23,24,25,\
+    if [ -n $line ]
+    then
+        cic=`echo $line | cut -d "," -f1,2,3,4,5,6`
+        fs_div=`echo $line | cut -d "," -f7`
+        f_pass_pre=`echo $line | cut -d "," -f8`
+        f_pass=`echo "$f_pass_pre * 2" | bc`
+        real_complex_pre=`echo $line | cut -d "," -f11`
+        if [ $real_complex_pre -eq 0 ]; then
+            real_complex="real"
+        else
+            real_complex="complex"
+        fi
+        fir=`echo $line | cut -d "," -f12,13,14,15,16,17,18,19,20,21,22,23,24,25,\
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41`
-    echo "Fs = 200 MHz, Fpass = ${f_pass} MHz, Fs divider = ${fs_div}, type = ${real_complex}
+        echo "Fs = 200 MHz, Fpass = ${f_pass} MHz, Fs divider = ${fs_div}, type = ${real_complex}
 ${cic}
 ${fir}"
+    fi
 done
