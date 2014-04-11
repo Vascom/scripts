@@ -2,19 +2,20 @@
 
 #crontab -e
 #0 */1 * * * bash /home/vascom/Dropbox/github/scripts/yandex_sync
-if [ -z "$1" ]
-then
-    local_directory="/home/vascom/local.yandex.disk/"
-else
-    local_directory="$1"
-fi
-remote_directory="/home/vascom/yandex.disk/"
 
-sync_status=`top -b -n 1 | grep rsync`
-if [ -e $remote_directory/Documents/ ] && [ -e "$local_directory" ] && [ -z "$sync_status" ]
-then
-    rsync -azsS --delete "$remote_directory" "$local_directory"
-#else
-    #echo "Yandex.disk not mounted yet."
-    #sudo mount yandex.disk
-fi
+#fusermount -u google.drive
+#google-drive-ocamlfuse -cc
+#google-drive-ocamlfuse -m google.drive
+
+#google.drive
+for site in yandex.disk 
+do
+    local_directory="/home/vascom/local.$site/"
+    remote_directory="/home/vascom/$site/"
+
+    sync_status=`top -b -n 1 | grep rsync`
+    if [ -e $remote_directory/Documents/ ] && [ -e "$local_directory" ] && [ -z "$sync_status" ]
+    then
+        rsync -azsS --delete "$remote_directory" "$local_directory"
+    fi
+done
