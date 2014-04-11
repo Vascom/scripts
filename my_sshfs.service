@@ -1,0 +1,15 @@
+[Unit]
+Description=Mount sshfs 
+Requires=network.target   
+After=network.target 
+ 
+[Service]
+Type=oneshot
+RemainAfterExit=True
+User=vascom
+ExecStart=/usr/bin/sshfs systech7:/home/vglazov /mnt/systech7 -o workaround=rename
+ExecStart=/usr/bin/sshfs systech6:/home/vglazov /mnt/systech6 -o workaround=rename
+ExecStart=/usr/bin/sshfs systech5:/home/vglazov /mnt/systech5 -o workaround=rename
+
+[Install]
+WantedBy=multi-user.target

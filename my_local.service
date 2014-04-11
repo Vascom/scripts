@@ -1,0 +1,16 @@
+[Unit]
+Description=Run my stuff  
+Requires=network.target   
+After=network.target 
+ 
+[Service]
+Type=oneshot
+RemainAfterExit=True
+ExecStart=/usr/bin/mount /home/vascom/yandex.disk
+ExecStart=/home/vascom/altera/11.1/qprogrammer/bin/jtagd
+ExecStart=/usr/sbin/modprobe ftdi_sio vendor=0x1a46 product=0x0001
+ 
+[Install]
+WantedBy=multi-user.target
+WantedBy=graphical.target
+
