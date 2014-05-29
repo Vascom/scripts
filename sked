@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DATE=`date -u | cut -d " " -f4 | cut -d ":" -f1,2`
-HHMM=`echo "$DATE" | sed -e 's/://'`
+HHMM=`date -u | cut -d " " -f4 | cut -d ":" -f1,2 --output-delimiter=""`
 
 FILE_IN=`grep R "$1" | grep -E "RUS|EEu" | grep -E -v "Volmet|DIGITAL|AutoRadioKlub" | sed -e 's/\ /_/g'`
 
