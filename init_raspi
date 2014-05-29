@@ -17,7 +17,7 @@ sda1_mounted="$sda1_mountpoint/downloads"
 function secure_section() {
     if [ ! -e $secure_section_to/kva/ ]
     then
-        echo -n "Mount secure section? (Y/n) "
+        echo -ne "Mount \e[31msecure\e[0m section? (Y/n) "
         read item
         case "$item" in
             y|Y|"") encfs $secure_section_from $secure_section_to
@@ -36,9 +36,14 @@ function yandex_disk_check() {
             sudo rm -rf $yd_pid_file
         fi
         sudo systemctl start home-vascom-yandex.disk.mount
-        echo "yandex.disk mounted"
     fi
-    secure_section
+    if systemctl status home-vascom-yandex.disk.mount &>/dev/null
+    then
+        echo -e "Yandex.Disk \e[32mOK\e[0m"
+        secure_section
+    else
+        echo -e "yandex.disk mount \e[31mFAILED\e[0m"
+    fi
 }
 
 function chronyd_check(){
@@ -48,6 +53,8 @@ function chronyd_check(){
         sudo systemctl restart chronyd
         echo "chronyd restarted"
         sleep $cronyd_delay
+    else
+        echo -e "Chronyd \e[32mOK\e[0m"
     fi
 }
 
@@ -72,7 +79,7 @@ function disks_mount_check(){
             echo "sda1 already mounted"
         fi
     else
-        echo "Error: sda1 not connected"
+        echo -e "\e[31mError\e[0m: sda1 not connected"
     fi
     sudo mount --bind downloads/ /var/www/lighttpd/downloads
     sudo mount --bind downloads/ /var/ftp/downloads/
@@ -84,6 +91,8 @@ function google_mount(){
     then
         google-drive-ocamlfuse google.drive
         echo "Google.Drive mounted"
+    else
+        echo -e "Google.Drive \e[32mOK\e[0m"
     fi
 }
 
@@ -95,6 +104,8 @@ function ftp_check(){
     #     sudo pure-ftpd --ipv4only --maxclientsnumber 10 --maxclientsperip 5 --anonymouscantupload \
     #     -login unix --passiveportrange 50000:60000 --forcepassiveip vascom.myftp.org --bind 8021 --daemonize
         echo "FTP started"
+    else
+        echo -e "FTP \e[32mOK\e[0m"
     fi
 }
 
@@ -103,6 +114,8 @@ function nfs_check(){
     then
         sudo systemctl start nfs
         echo "NFS started"
+    else
+        echo -e "NFS \e[32mOK\e[0m"
     fi
 }
 
