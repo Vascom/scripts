@@ -1,0 +1,15 @@
+[Unit]
+Description=Mount my raspi
+Requires=network.target
+After=network.target
+After=remote-fs.target
+
+[Mount]
+What=raspi:/home/vascom/
+Where=/home/vascom/raspi
+Type=nfs4
+#Options=uid=1000,gid=1000,rsize=8192,wsize=8192
+#TimeoutSec=600
+
+[Install]
+WantedBy=multi-user.target
