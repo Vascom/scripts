@@ -1,0 +1,15 @@
+[Unit]
+Description=Mount my Incoming
+Requires=network.target
+After=network.target
+After=remote-fs.target
+
+[Mount]
+What="//fs-2/incoming"
+Where=/home/vascom/incoming
+Type=cifs
+Options=credentials=/home/vascom/.smb_cred
+TimeoutSec=600
+
+[Install]
+WantedBy=multi-user.target
