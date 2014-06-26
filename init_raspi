@@ -46,18 +46,6 @@ function yandex_disk_check() {
     fi
 }
 
-function chronyd_check(){
-    if ! systemctl status chronyd &>/dev/null
-    then
-        sudo rm -f $cd_pid_file
-        sudo systemctl restart chronyd
-        echo "chronyd restarted"
-        sleep $cronyd_delay
-    else
-        echo -e "Chronyd \e[32mOK\e[0m"
-    fi
-}
-
 function disks_mount_check(){
     if [ -e $dev_sdb1 ]
     then
@@ -109,22 +97,31 @@ function ftp_check(){
     fi
 }
 
-function nfs_check(){
-    if ! systemctl status nfs &>/dev/null
+function service_check(){
+    if ! systemctl status $1 &>/dev/null
     then
-        sudo systemctl start nfs
-        echo "NFS started"
+        if [ "$1" == "chronyd" ]
+        then
+            sudo rm -f $cd_pid_file
+            sudo systemctl restart chronyd
+            echo "$1 restarted"
+            sleep $cronyd_delay
+        else
+            sudo systemctl start $1
+            echo "$1 started"
+        fi
     else
-        echo -e "NFS \e[32mOK\e[0m"
+        echo -e "$1 \e[32mOK\e[0m"
     fi
 }
 
-chronyd_check
+service_check chronyd
 yandex_disk_check
 google_mount
 disks_mount_check
+service_check noip
+service_check nfs
 ftp_check
-nfs_check
 
 #fuse-zip -o allow_other russianfedora.pro.zip /var/www/lighttpd/misc/sites
 #cd /var/www/lighttpd/misc/sites
