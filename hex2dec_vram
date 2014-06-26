@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#Convert data from Altera hex-file to decimal
+VRAM_H=`cut "$1" -c11,12,13 | head -n -1`
+full_length=`wc -l "$1" | cut -d " " -f1`
+full_length=`expr $full_length - 1`
+split_lines=`expr $full_length / 16`
+
+echo "$VRAM_H" | split -l $split_lines -
+
+function convert_vram() {
+    DATA_CONV=`cat $1`
+    for DATA in $DATA_CONV
+    do
+        VRAM_D=`echo "ibase=16; $DATA" | bc`
+        if [ "$VRAM_D" -gt 2047 ]
+        then
+            VRAM_D=`expr $VRAM_D - 4096`
+        fi
+        echo "$VRAM_D"
+    done
+}
+
+for suf in a b c d e f g h i j k l m n o p
+do
+    convert_vram xa$suf > xa${suf}_dec &
+done
+
+check_name=`basename $0`
+check_lines=`ps aux | grep $check_name -c`
+while [ "$check_lines" -gt 3 ]
+do
+    sleep 5
+    check_lines=`ps aux | grep $check_name -c`
+done
+
+for suf in a b c d e f g h i j k l m n o p
+do
+    cat xa${suf}_dec
+done
+
+rm xa*
