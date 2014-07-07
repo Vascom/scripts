@@ -16,9 +16,11 @@ if [ "$2" = "octave" ]
 then
     echo "$VRAM_H" > vr
 
-    octave -q --persist --eval 'x = hex2dec(textread("vr", "%s"));
-        for k=1:65536 if(x(k)>2047) x(k)=x(k)-4096; end; end
-        f=20*log10(abs(fft(x))/max(abs(fft(x))));'
+    echo "Use Octave with $hex_bits bit-width and $full_length numbers"
+    octave -q --persist --eval "x = hex2dec(textread(\"vr\", \"%s\"));
+        for k=1:$full_length if(x(k)>$thr_bits) x(k)=x(k)-$max_bits; end; end
+        x_absfft = abs(fft(x));
+        f=20*log10(x_absfft/max(x_absfft));"
     exit
 fi
 
