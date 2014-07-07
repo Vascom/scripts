@@ -11,6 +11,17 @@ full_length=`wc -l "$1" | cut -d " " -f1`
 full_length=`expr $full_length - 1`
 split_lines=`expr $full_length / 16`
 
+#Use octave for format conversion
+if [ "$2" = "octave" ]
+then
+    echo "$VRAM_H" > vr
+
+    octave -q --persist --eval 'x = hex2dec(textread("vr", "%s"));
+        for k=1:65536 if(x(k)>2047) x(k)=x(k)-4096; end; end
+        f=20*log10(abs(fft(x))/max(abs(fft(x))));'
+    exit
+fi
+
 echo "$VRAM_H" | split -l $split_lines -
 
 function convert_vram() {
@@ -32,10 +43,5 @@ do
 done
 
 wait
-
-for suf in $suf_array
-do
-    cat xa${suf}_dec
-done
-
+cat xa[a-p]_dec
 rm xa*
