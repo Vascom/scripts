@@ -1,6 +1,16 @@
 #!/bin/bash
 
 #Convert data from Altera hex-file to decimal
+
+if [ -z "$1" ]
+then
+    echo "Format isn't correct!"
+    echo -e "Use \033[1mhex2dec_vram VRAM.hex\033[0m to create decimal output to stdout (slow)."
+    echo -e "Use \033[1mhex2dec_vram VRAM.hex octave_out\033[0m to create decimal output to stdout (fast, using Octave)."
+    echo -e "Use \033[1mhex2dec_vram VRAM.hex octave\033[0m to convert format and open data in Octave session."
+    exit
+fi
+
 hex_bits=12
 max_bits=`echo "2^$hex_bits" | bc`
 thr_bits=`echo "$max_bits/2-1" | bc`
@@ -9,7 +19,6 @@ suf_array="a b c d e f g h i j k l m n o p"
 VRAM_H=`cut "$1" -c10,11,12,13 | head -n -1`
 full_length=`wc -l "$1" | cut -d " " -f1`
 full_length=`expr $full_length - 1`
-split_lines=`expr $full_length / 16`
 
 #Use octave for format conversion
 if [ "$2" = "octave" ]
@@ -23,7 +32,17 @@ then
         f=20*log10(x_absfft/max(x_absfft));"
     exit
 fi
+if [ "$2" = "octave_out" ]
+then
+    echo "$VRAM_H" > vr
 
+    octave -q --eval "x = hex2dec(textread(\"vr\", \"%s\"));
+        for k=1:$full_length if(x(k)>$thr_bits) x(k)=x(k)-$max_bits; end; end
+        printf(\"%i\\n\",x);"
+    exit
+fi
+
+split_lines=`expr $full_length / 16`
 echo "$VRAM_H" | split -l $split_lines -
 
 function convert_vram() {
