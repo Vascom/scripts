@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#Convert data from Altera hex-file to decimal
+
+function use_help() {
+    echo "Format isn't correct!"
+    echo -e "Use \033[1mhex2dec_vram VRAM.hex conv 0 0 12\033[0m to convert format to x0_0 file."
+    echo -e "Use \033[1mhex2dec_vram VRAM.hex fft 0 0 12\033[0m to convert format and open data and FFT in Octave session."
+    echo -e "\$3 - 32-bit signal select 0 to 7"
+    echo -e "\$4 - 16 bit sel from 32-bit signal"
+    echo -e "\$5 - real bit-width of signal"
+    exit
+}
+
+if [ -z "$1" -o -z "$2" -o -z "$3" -o -z "$4" -o -z "$5" ]
+then
+    use_help
+fi
+
+function data_file_prepare() {
+    #$1  - 32-bit signal 0 to 7
+    #$2  - 16 bit sel from 32-bit signal
+    #$3 - real bit-width of signal
+    local hex_bits="$3"
+    local max_bits=`echo "2^$hex_bits" | bc`
+    local thr_bits=`echo "$max_bits/2-1" | bc`
+
+    if [ "$2" = 0 ]
+    then
+        local bits_sel="10,11,12,13"
+    else
+        local bits_sel="6,7,8,9"
+    fi
+
+    cut vr -c$bits_sel | head -n -1 > vr_clean
+
+    local full_length=`wc -l vr_clean | cut -d " " -f1`
+
+    if [ "$4" = 0 ]
+    then
+        octave -q --eval "x = hex2dec(textread(\"vr_clean\", \"%s\"));
+            for k=1:$full_length if(x(k)>$thr_bits) x(k)=x(k)-$max_bits; end; end
+            file_id = fopen(\"x$1_$2\", 'w');
+            fprintf(file_id,\"%i\\n\",x);
+            fclose(file_id);"
+    else
+        octave -q --persist --eval "x = hex2dec(textread(\"vr_clean\", \"%s\"));
+            for k=1:$full_length if(x(k)>$thr_bits) x(k)=x(k)-$max_bits; end; end
+            x_absfft = abs(fft(x));
+            f=20*log10(x_absfft/max(x_absfft));
+            disp(\"To see data enter plot(x)\");
+            disp(\"To see FFT enter plot(f)\");"
+    fi
+}
+
+#Use octave for format conversion
+case $2 in
+    conv)
+            cp $1 vr
+            data_file_prepare $3 $4 $5 0
+            ;;
+    fft)
+            cp $1 vr
+            data_file_prepare $3 $4 $5 1
+            ;;
+    *)      use_help
+            ;;
+esac
