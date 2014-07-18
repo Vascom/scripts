@@ -33,9 +33,9 @@ function file_download() {
     then
 #         wget -q -O $HOME/Dropbox/films_about/$NUMBER.html -U "$USER_AGENT" \
 #         http://m.kinopoisk.ru/movie/$NUMBER/
-        lynx -source http://m.kinopoisk.ru/movie/$NUMBER/ > $HOME/Dropbox/films_about/$NUMBER.html
-        iconv -f cp1251 -t utf8 $HOME/Dropbox/films_about/$NUMBER.html > /tmp/index2.html
-        mv /tmp/index2.html $HOME/Dropbox/films_about/$NUMBER.html
+#         lynx
+        elinks -source http://m.kinopoisk.ru/movie/$NUMBER/ \
+        | iconv -f cp1251 -t utf8 > $HOME/Dropbox/films_about/$NUMBER.html
         echo "Film $FILM downloaded"
     fi
 

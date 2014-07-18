@@ -1,19 +1,26 @@
 #!/bin/bash
 
+#Convert data from Altera hex-file to decimal
+#cut VRAM.hex -c11,12,13 | head -n -1 | tail > VRAM_clean.hex; Dropbox/github/scripts/hex2dec VRAM_clean.hex > VRAM.dec
+
 NUM=1
 N="-n"
 
 while read BIN_DATA
 do
     HEX_DATA=`echo "ibase=16; $BIN_DATA" | bc`
-    NUM=`expr $NUM + 1`
-    if [[ $NUM == 9 ]]
-    then
-        N=""
-        NUM=1
-    else
-        N="-n"
-    fi
+#     NUM=`expr $NUM + 1`
+#     if [[ $NUM == 9 ]]
+#     then
+#         N=""
+#         NUM=1
+#     else
+#         N="-n"
+#     fi
     #echo $N "0x$HEX_DATA,"
+    if [ "$HEX_DATA" -gt 2047 ]
+    then
+        HEX_DATA=`expr $HEX_DATA - 4096`
+    fi
     echo "$HEX_DATA"
 done < "$1"
