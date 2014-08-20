@@ -49,27 +49,12 @@ total_GGA=`grep -c GGA "$1"`
 # message_time_PRE=`cat $IN_FILE_LIST | grep GPGGA -m 1 | cut -d "," -f2 | cut -d "." -f1`
 # message_time=`expr $message_time_PRE - 1`
 
-function number_to_decimal() {
-    local sv
-    if [ "$1" == "08" ] || [ "$1" == "09" ]
-    then
-        sv=`expr "$1" + 0`
-    else
-        sv=$1
-    fi
-    echo $sv
-    
-#     elif [ "$sv_number" -gt "32" ]
-#     then
-#         echo "Anomal SV $sv_number at $message_time"
-#     fi
-}
-
 function number_check() {
     local nc
     if [ -z "$1" ]
     then
         nc=0
+        echo "BAD"
     else
         nc=$1
     fi
@@ -82,6 +67,7 @@ then
 else
     THREADS=$4
 fi
+THREADS=2
 echo "Using $THREADS processors"
 
 #rm -rf /tmp/nmea/log
@@ -90,7 +76,7 @@ echo "Using $THREADS processors"
 #echo "$FILE_IN" | head
 #exit 0
 
-grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1 > /tmp/nmea
+grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1 | sed 's/,08,/,8,/g' | sed 's/,09,/,9,/g' > /tmp/nmea
 pushd /tmp
     string_count=`wc -l nmea | awk '{print $1}'`
     strings_in_file=`expr $string_count / $THREADS`
@@ -116,6 +102,7 @@ function part_processing() {
     local message_number
     local sv_number
 
+    local total_GGA=`grep -c GGA "$1"`
     local FILE_IN=`grep -E "GGA|GSV" $1  | cut -d "*" -f1`
     #echo "$FILE_IN" | tail
     for one_string in `echo "$FILE_IN"`
@@ -154,10 +141,10 @@ function part_processing() {
             #sat_v contain 33 vars: message_time + 32 satellites
             sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
 
-            if [ -z "$3" ]
-            then
-                echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
-            fi
+#             if [ -z "$3" ]
+#             then
+#                 echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
+#             fi
         elif [ "$navmes" == "\$GPGSV" ]
         then
             total_messages=`echo "$one_string" | cut -d "," -f2`
@@ -165,36 +152,28 @@ function part_processing() {
     #         TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
 
             sv_number=`echo "$one_string" | cut -d "," -f5`
-            #echo $sv_number 1
-            sv_number=`number_to_decimal $sv_number`
-            #echo $sv_number 2
     #             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
     #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
             sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f8`
-            sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#             sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
-            #echo $sv_number 3
-            #exit
             sv_number=`echo "$one_string" | cut -d "," -f9`
             if [ -n "$sv_number" ]
             then
-                sv_number=`number_to_decimal $sv_number`
                 sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f12`
-                sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                 sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
                 sv_number=`echo "$one_string" | cut -d "," -f13`
                 if [ -n "$sv_number" ]
                 then
-                    sv_number=`number_to_decimal $sv_number`
                     sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f16`
-                    sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                     sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
                     sv_number=`echo "$one_string" | cut -d "," -f17`
                     if [ -n "$sv_number" ]
                     then
-                        sv_number=`number_to_decimal $sv_number`
                         sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f20`
-                        sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                         sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
                     fi
                 fi
             fi
@@ -203,7 +182,6 @@ function part_processing() {
             then
                 sat_v[0]=$message_time
                 echo "${sat_v[@]} $hdop" >> "$2"
-                #/home/vascom/sat/log
             fi
 
             #GSV_decode_counter=`expr $GSV_decode_counter + 1`
@@ -213,6 +191,10 @@ function part_processing() {
             #$unknown_decode_counter=`expr $unknown_decode_counter + 1`
         fi
     done
+    if [ -n "$3" ]
+    then
+        echo -e "GGA: $GGA_decode_counter of $total_GGA "
+    fi
 }
 
 part_processing /tmp/x00 /tmp/nmea_decode_0 1 &
@@ -224,16 +206,32 @@ if [ -n "$3" ]
 then
     echo -ne "GGA: $GGA_decode_counter of $total_GGA"
 fi
-echo -e "\nUnknown: $unknown_decode_counter"
+#echo -e "\nUnknown: $unknown_decode_counter"
 
-echo -n "Detected satellites: "
-for ((k=1; k < 33 ; k++))
+echo -en "Detected all satellites numbers: "
+for ((k=2; k < 34 ; k++))
 do
-    if [ "${sat_v_notnull[$k]}" != "0" ]
+    check0=0
+    check1=0
+    st=`cut "$2" -d " " -f$k`
+    for one_string in $st
+    do
+        if [ $one_string -ne "0" ]
+        then
+            check1=1
+        else
+            check0=1
+        fi
+    done
+    if [ $check1 -eq "1" ]
     then
-        echo -n "$k "
-        #echo -n "${sat_v_notnull[$k]} "
+        if [ $check0 -eq "1" ]
+        then
+            echo -en "\e[31m`expr $k - 1`\e[0m "
+        else
+            echo -en "\e[32m`expr $k - 1`\e[0m "
+        fi
     fi
 done
-echo ""
 
+echo ""
