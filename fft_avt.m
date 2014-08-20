@@ -30,6 +30,7 @@ end
 %Fs = 190;
 
 %Number of FFT points as power of 2
+%Low number - low Frequency resolution but big smoothnes of picture. Useful 9 to 14.
 %smpl = 14;
 
 %Enable Hann window for FFT
@@ -48,19 +49,6 @@ if test_mode == 1
     snoi = normrnd(0,0.001,1,2^20);
     f4 = ssin + snoi;
     [nr,nc] = size(f4);
-    
-    l1=0.64;
-    l2=0.64*2/3;
-    l3=0.64*1/3;
-    for k=1:2^12
-        sd(k) =  0;
-        if ssin(k)<(-l1) sd(k) = -1; end
-        if ssin(k)<(-l2) sd(k) = -2; end
-        if ssin(k)<(-l3) sd(k) = -3; end
-        if ssin(k)>( l1) sd(k) =  1; end
-        if ssin(k)>( l2) sd(k) =  2; end
-        if ssin(k)>( l3) sd(k) =  3; end
-    end
 else
     f_pre = load(data_file);
     [nr,nc] = size(f_pre);
