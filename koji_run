@@ -21,16 +21,16 @@ fi
 #then
 #    dist="dist-rfr-alpha$3"
 #el
-if [ "$dist_short" = "6" ]
+if [ "$dist_short" = "6" ] || [ "$dist_short" = "7" ]
 then
     dist="dist-el$dist_short"
 elif [ "$dist_short" = "rawhide" ]
 then
     dist="dist-rfr-rawhide"
-# elif [ "$dist_short" = "20" ]
-# then
-#     dist="dist-rfr$dist_short-devel"
-#     #dist="dist-rfr$dist_short"
+ elif [ "$dist_short" = "21" ]
+ then
+     dist="dist-rfr$dist_short-devel"
+     #dist="dist-rfr$dist_short"
 else
     dist="dist-rfr$dist_short"
 fi
@@ -55,5 +55,5 @@ if [ -z "$3" ]
 then
     echo "Need first dist_number"
 else
-    koji $quiet -c $koji_config build $test $dist git://github.com/RussianFedora/$1.git?#$2 &
+    koji $quiet -c $koji_config build $test $dist git://github.com/RussianFedora/$1.git?#$2 1>/dev/null &
 fi
