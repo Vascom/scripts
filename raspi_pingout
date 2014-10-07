@@ -1,0 +1,20 @@
+#!/bin/bash
+
+check_count=4
+hosts=`grep 192 /etc/hosts | awk '{print $2}'`
+
+function host_check() {
+    local received=`ping $1 -c $check_count | grep transmitted | awk '{print $4}'`
+    if [ $received -ne "0" ]
+    then
+        echo -e "$host \e[32mactive\e[0m"
+    else
+        echo -e "$host \e[31minactive\e[0m"
+    fi
+}
+
+for host in $hosts
+do
+    host_check $host &
+done
+wait
