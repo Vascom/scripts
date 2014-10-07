@@ -1,0 +1,11 @@
+#!/bin/bash
+
+check=`dmesg | grep Error -c`
+
+while [ $check -eq "0" ]
+do
+    #echo $check
+    sleep 10m
+    check=`dmesg | grep Error -c`
+done
+echo -e "`date`\n\n `uptime`\n\n" | mail -s "Raspi problem" vascom2@gmail.com
