@@ -1,0 +1,15 @@
+[Unit]
+Description=Mount sysech5 folder
+Requires=network.target   
+After=network.target 
+After=remote-fs.target
+ 
+[Mount]
+What=172.17.0.23:/home/vglazov
+Where=/mnt/systech5
+Type=nfs
+#Options=vers=4,rw
+
+[Install]
+WantedBy=multi-user.target
+
