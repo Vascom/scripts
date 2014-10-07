@@ -129,10 +129,11 @@ then
     jic_seq_pre=`cat jic_sec_number`
     JIC_SEQ=`expr $jic_seq_pre + 1`
     echo $JIC_SEQ > jic_sec_number
-    JIC_NAME=`echo avt2_${JIC_SEQ}_chan${CHANNELS_NUMBER}_filt${FILTERS_WB_NUMBER}_fft${FFT_OUT_ENABLE}_mf${FAST_ACQUISITION_LENGTH}_${GIT_COMMIT_SHORT}.jic`
-    sed -i -e "s/<output_filename>.*<\/output_filename>/<output_filename>$JIC_NAME<\/output_filename>/" $JIC_CONF
+    JIC_NAME=`echo avt2_${JIC_SEQ}_chan${CHANNELS_NUMBER}_filt${FILTERS_WB_NUMBER}_fft${FFT_OUT_ENABLE}_mf${FAST_ACQUISITION_LENGTH}_${GIT_COMMIT_SHORT}`
+    sed -i -e "s/<output_filename>.*<\/output_filename>/<output_filename>$JIC_NAME.jic<\/output_filename>/" $JIC_CONF
     quartus_cpf -c $JIC_CONF > /dev/null
-    echo "$JIC_NAME"
+    cp config_last $JIC_NAME.config
+    echo $JIC_NAME.jic
 
     echo "All finished"
     send_email "успешно"
