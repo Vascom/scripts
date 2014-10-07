@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for y in `seq 1999 2014`
+do
+    for m in `seq -w 1 12`
+    do
+        wget http://xakep.ru/wp-content/uploads/2014/08/xa_${m}_${y}_low.pdf
+    done
+done
+
