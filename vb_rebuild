@@ -1,9 +1,6 @@
 #!/bin/bash
 
-#Check
-START_USER=`whoami`
-
-if [ $START_USER == "root" ]
+if [ $USER == "root" ]
 then
     if [ ! -e /tmp/vb_rebuild ]
     then
