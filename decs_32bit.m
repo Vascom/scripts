@@ -6,7 +6,7 @@ function [full_mem] = decs_32bit (data, width)
 
 widht_mask = 2^width-1;
 word = 32;
-width_word = 2^32;
+width_word = 2^word;
 
 full_mem = char();
 for i = 1:length(data)
