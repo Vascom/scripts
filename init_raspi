@@ -115,12 +115,15 @@ function service_check(){
     fi
 }
 
+echo "Starting at temperature: `sensors | grep temp | cut -d "+" -f2`"
+
 service_check chronyd
 yandex_disk_check
 google_mount
 disks_mount_check
 service_check noip
 service_check nfs
+service_check lighttpd
 ftp_check
 
 #fuse-zip -o allow_other russianfedora.pro.zip /var/www/lighttpd/misc/sites
