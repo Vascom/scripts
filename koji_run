@@ -17,23 +17,12 @@ else
     dist_short="$3"
 fi
 
-#if [ "$3" = "16" ]
-#then
-#    dist="dist-rfr-alpha$3"
-#el
-if [ "$dist_short" = "6" ] || [ "$dist_short" = "7" ]
-then
-    dist="dist-el$dist_short"
-elif [ "$dist_short" = "rawhide" ]
-then
-    dist="dist-rfr-rawhide"
- elif [ "$dist_short" = "21" ]
- then
-     dist="dist-rfr$dist_short-devel"
-     #dist="dist-rfr$dist_short"
-else
-    dist="dist-rfr$dist_short"
-fi
+case $dist_short in
+    [67])       dist="dist-el$dist_short";;
+    rawhide)    dist="dist-rfr-rawhide";;
+    21)         dist="dist-rfr$dist_short-devel";;
+    *)          dist="dist-rfr$dist_short";;
+esac
 
 if [ "$4" = "test" ] || [ "$5" = "test" ]
 then
