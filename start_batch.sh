@@ -3,12 +3,29 @@
 PROJECT_NAME="leon3mp"
 EN64="--64bit"
 READ_WRITE_SETTINGS="--read_settings_files=on --write_settings_files=off"
-GIT_REPO="$HOME/triumph40n_git"
-ASIC_CONFIG="$HOME/triumph40n_git/rtl/inc/global_config_dsp.inc"
+GIT_REPO="$HOME/Triumph2-MkII"
+ASIC_CONFIG="$HOME/Triumph2-MkII/rtl/inc/global_config_dsp.inc"
 JIC_CONF="output_file_sl340.cof"
 ERROR_PRINT=1
+ONLYMAP=0
 
 #Check map or fit logs for errors
+case "$1" in
+    errmap)     grep "Error" "$PROJECT_NAME.map.rpt"
+                exit;;
+    errfit)     grep "Error" "$PROJECT_NAME.fit.rpt"
+                exit;;
+    onlymap)    ONLYMAP=1;;
+    kill)       kill -s 15 `cat map.pid 2>/dev/null` 2>/dev/null
+                kill -s 15 `cat fit.pid 2>/dev/null` 2>/dev/null
+                exit
+                ;;
+    "")         ;;
+    *)          echo -e "\n\e[31mWrong parameter\e[0m"
+                echo "Available options: errmap errfit onlymap kill"
+                exit;;
+esac
+
 if [[ $1 == errmap ]]
 then
     grep "Error" "$PROJECT_NAME.map.rpt"
@@ -58,6 +75,8 @@ CHANNELS_QL=`expr $CHANNELS_QL_NUMBER \* $CHANNELS_QL_ENABLE`;
 FAST_ACQUISITION_LENGTH=`grep -m 1 FAST_ACQUISITION_LENGTH $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 FILTERS_WB_ENABLE=`grep FILTERS_WB_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "h" -f2`
 FFT_OUT_ENABLE=`grep FFT_OUT_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+AJM_ENABLE=`grep AJM_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+FAJ_NUMBER=`grep -m 1 FIR_AJM_NUMBER $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 
 case "$FILTERS_WB_ENABLE" in
     001)        FILTERS_WB_NUMBER=1;;
@@ -79,14 +98,16 @@ echo -e "$GIT_COMMIT\n" | tee config_last
 echo -e "Date     : `date`
     \rChannels : $CHANNELS_NUMBER_ALL + ${CHANNELS_QL}QL
     \rFA Length: $FAST_ACQUISITION_LENGTH
-    \rFilters  : $FILTERS_WB_NUMBER
+    \rFilters  : $FILTERS_WB_NUMBER + ${FAJ_NUMBER}FAJ
+    \rAJM ena  : $AJM_ENABLE
     \rFFT ena  : $FFT_OUT_ENABLE" | tee --append config_last
 
 cat $ASIC_CONFIG >> config_last
 
-echo -e "\e[32mStart\e[0m mapping "
+echo -en "\e[32mStart\e[0m mapping PID: "
 
 quartus_map $EN64 --parallel=on $READ_WRITE_SETTINGS $PROJECT_NAME -c $PROJECT_NAME &>longlog.map.log &
+echo "$!" | tee map.pid
 timer map
 
 ERROR_PRESENT=`grep -c "Error:" "$PROJECT_NAME.map.rpt"`
@@ -107,8 +128,15 @@ fi
 ERROR_PRESENT=`grep -c "Error:" "$PROJECT_NAME.merge.rpt"`
 if [ $ERROR_PRESENT == 0 ]
 then
-    echo -e "\e[32mStart\e[0m fitting "
+    #Exit if only mapping is need
+    if [[ $ONLYMAP == 1 ]]
+    then
+        echo -e "\e[32mOnly Mapping done.\e[0m"
+        exit
+    fi
+    echo -en "\e[32mStart\e[0m fitting PID: "
     quartus_fit $EN64 --parallel=4 $READ_WRITE_SETTINGS $PROJECT_NAME -c $PROJECT_NAME &>longlog.fit.log &
+    echo "$!" | tee map.pid
     timer fit
 else
     echo -e "\e[31mFinished with errors in merging\e[0m"
