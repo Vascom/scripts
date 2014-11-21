@@ -84,18 +84,18 @@ function google_mount(){
     fi
 }
 
-function ftp_check(){
-    ftp_status=`ps aux | grep pure-ftpd -c`
-    if [ $ftp_status -lt 2 ]
-    then
-        sudo pure-ftpd -4 -c 10 -C 5 -i -l unix -p 50000:60000 -P vascom.myftp.org -S 8021 -B
-    #     sudo pure-ftpd --ipv4only --maxclientsnumber 10 --maxclientsperip 5 --anonymouscantupload \
-    #     -login unix --passiveportrange 50000:60000 --forcepassiveip vascom.myftp.org --bind 8021 --daemonize
-        echo "FTP started"
-    else
-        echo -e "FTP \e[32mOK\e[0m"
-    fi
-}
+# function ftp_check(){
+#     ftp_status=`ps aux | grep pure-ftpd -c`
+#     if [ $ftp_status -lt 2 ]
+#     then
+#         sudo pure-ftpd -4 -c 10 -C 5 -i -l unix -p 50000:60000 -P vascom.myftp.org -S 8021 -B
+#     #     sudo pure-ftpd --ipv4only --maxclientsnumber 10 --maxclientsperip 5 --anonymouscantupload \
+#     #     -login unix --passiveportrange 50000:60000 --forcepassiveip vascom.myftp.org --bind 8021 --daemonize
+#         echo "FTP started"
+#     else
+#         echo -e "FTP \e[32mOK\e[0m"
+#     fi
+# }
 
 function service_check(){
     if ! systemctl status $1 &>/dev/null
@@ -124,7 +124,8 @@ disks_mount_check
 service_check noip
 service_check nfs
 service_check lighttpd
-ftp_check
+service_check pure-ftpd
+#ftp_check
 
 #fuse-zip -o allow_other russianfedora.pro.zip /var/www/lighttpd/misc/sites
 #cd /var/www/lighttpd/misc/sites
