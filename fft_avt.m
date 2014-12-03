@@ -3,7 +3,9 @@
 %dirname `rpm -ql octave-signal | grep hann.m` >> ~/.octaverc
 
 %Prepare data
+%system ('grep "3:" minicom.cap | cut -d ":" -f2 | cut -d " " -f1,2 > f3');
 %grep "8:" minicom.cap | cut -d ":" -f2 | cut -d " " -f1 > f8
+%grep "3:" minicom.cap | cut -d ":" -f2 | cut -d " " -f1,2 > f3
 %histc(a,[-3 -2 -1 0 1 2 3])/length(a)*100
 
 function [] = fft_avt (data_file, Fs, smpl, use_window, plot_color, test_mode)
@@ -54,8 +56,10 @@ else
     [nr,nc] = size(f_pre);
     if nc == 1
         f4 = f_pre;
+        cplx_mode = "real";
     else
         f4 = complex(f_pre(:,1),f_pre(:,2));
+        cplx_mode = "complex";
     end
 end
 
@@ -63,11 +67,8 @@ fft_samples=2^smpl;
 fft_samples_half=fft_samples/2;
 number_dia=length(f4)/fft_samples;
 
-printf("Total %d samples\n",length(f4));
-printf("FFT %d samples\n",fft_samples);
-printf("Total %d diapasons\n",number_dia);
-printf("Max FFT precision: %d Hz if FFT smpl = %d\n",Fs*1e6/length(f4),log2(length(f4)));
-printf("Real FFT precision: %d Hz with FFT smpl = %d\n",Fs*1e6/fft_samples,smpl);
+printf("Total %d %s samples (FFT %d samples and %d diapasons)\n",length(f4),cplx_mode,fft_samples,number_dia);
+printf("FFT precision: %d Hz (smpl = %d); MAX %d Hz (smpl = %d)\n",Fs*1e6/fft_samples,smpl,Fs*1e6/length(f4),log2(length(f4)));
 
 if use_window == 1
     hann_coeffs = hann(fft_samples);
