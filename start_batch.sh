@@ -15,26 +15,23 @@ case "$1" in
                 exit;;
     errfit)     grep "Error" "$PROJECT_NAME.fit.rpt"
                 exit;;
-    onlymap)    ONLYMAP=1;;
-    kill)       kill -s 15 `cat map.pid 2>/dev/null` 2>/dev/null
-                kill -s 15 `cat fit.pid 2>/dev/null` 2>/dev/null
-                exit
+    kill)       if [ -e mapfit.pid ]
+                then
+                    pkill -F mapfit.pid -x "quartus_map|quartus_fit"
+                    rm mapfit.pid
+                    echo "Kill done"
+                else
+                    echo "Nothing to kill"
+                fi
+                exit;;
+    onlymap)    ONLYMAP=1
+                echo "Only Mapping mode"
                 ;;
     "")         ;;
     *)          echo -e "\n\e[31mWrong parameter\e[0m"
                 echo "Available options: errmap errfit onlymap kill"
                 exit;;
 esac
-
-if [[ $1 == errmap ]]
-then
-    grep "Error" "$PROJECT_NAME.map.rpt"
-    exit
-elif [[ $1 == errfit ]]
-then
-    grep "Error" "$PROJECT_NAME.fit.rpt"
-    exit
-fi
 
 #Check Quartus binaries in user PATH
 for q_bin in quartus_map quartus_cdb quartus_fit quartus_sta quartus_asm quartus_cpf
@@ -56,9 +53,14 @@ function timer() {
         mv "$PROJECT_NAME.$1.rpt" "$PROJECT_NAME.$1.old.rpt"
     fi
     local PTIME=0
+    local phour
+    local pminute
     while [ ! -e "$PROJECT_NAME.$1.rpt" ]
     do
-        echo -ne "\r$PTIME min "
+        phour=`expr $PTIME / 60`
+        pminute=`expr $PTIME - 60 \* $phour`
+        pminute_out=
+        echo -ne "\rTime $phour:$pminute "
         PTIME=`expr $PTIME + 1`
         sleep 1m
     done
@@ -96,7 +98,7 @@ cd -
 echo -e "$GIT_COMMIT\n" | tee config_last
 
 echo -e "Date     : `date`
-    \rChannels : $CHANNELS_NUMBER_ALL + ${CHANNELS_QL}QL
+    \rChannels : ${CHANNELS_NUMBER_ALL}(${CHANNELS_NUMBER}MC+${CHANNELS_NUMBER_EXT}) + ${CHANNELS_QL}QL
     \rFA Length: $FAST_ACQUISITION_LENGTH
     \rFilters  : $FILTERS_WB_NUMBER + ${FAJ_NUMBER}FAJ
     \rAJM ena  : $AJM_ENABLE
@@ -104,11 +106,12 @@ echo -e "Date     : `date`
 
 cat $ASIC_CONFIG >> config_last
 
-echo -en "\e[32mStart\e[0m mapping PID: "
+echo -e "\e[32mStart\e[0m mapping"
 
 quartus_map $EN64 --parallel=on $READ_WRITE_SETTINGS $PROJECT_NAME -c $PROJECT_NAME &>longlog.map.log &
-echo "$!" | tee map.pid
+echo "$!" > mapfit.pid
 timer map
+rm mapfit.pid
 
 ERROR_PRESENT=`grep -c "Error:" "$PROJECT_NAME.map.rpt"`
 if [ $ERROR_PRESENT == 0 ]
@@ -134,10 +137,11 @@ then
         echo -e "\e[32mOnly Mapping done.\e[0m"
         exit
     fi
-    echo -en "\e[32mStart\e[0m fitting PID: "
+    echo -e "\e[32mStart\e[0m fitting"
     quartus_fit $EN64 --parallel=4 $READ_WRITE_SETTINGS $PROJECT_NAME -c $PROJECT_NAME &>longlog.fit.log &
-    echo "$!" | tee map.pid
+    echo "$!" > mapfit.pid
     timer fit
+    rm mapfit.pid
 else
     echo -e "\e[31mFinished with errors in merging\e[0m"
     send_email "с ошибкой в merging"
