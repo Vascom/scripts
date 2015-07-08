@@ -4,6 +4,8 @@ yd_remote_directory="/home/vascom/yandex.disk/"
 gd_remote_directory="/home/vascom/google.drive/"
 secure_section_from="/home/vascom/yandex.disk/.secure/"
 secure_section_to="/home/vascom/secure"
+secure_ftp_from="/home/vascom/.secure_ftp/"
+secure_ftp_to="/home/vascom/secure_ftp/"
 yd_pid_file="/var/run/mount.davfs/home-vascom-yandex.disk.pid"
 cd_pid_file="/var/run/chronyd.pid"
 cronyd_delay=10
@@ -21,6 +23,20 @@ function secure_section() {
         read item
         case "$item" in
             y|Y|"") encfs $secure_section_from $secure_section_to
+                ;;
+            *) echo "Exit"
+                ;;
+        esac
+    fi
+}
+
+function secure_ftp() {
+    if [ ! -e $secure_ftp_to/torrents/ ]
+    then
+        echo -ne "Mount \e[31msecure\e[0m FTP section? (Y/n) "
+        read item
+        case "$item" in
+            y|Y|"") encfs $secure_ftp_from $secure_ftp_to
                 ;;
             *) echo "Exit"
                 ;;
@@ -118,8 +134,9 @@ function service_check(){
 echo "Starting at temperature: `sensors | grep temp | cut -d "+" -f2`"
 
 service_check chronyd
-yandex_disk_check
-google_mount
+#yandex_disk_check
+secure_ftp
+#google_mount
 disks_mount_check
 service_check noip
 service_check nfs

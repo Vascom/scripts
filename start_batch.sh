@@ -1,13 +1,28 @@
 #!/bin/bash
 
 PROJECT_NAME="leon3mp"
+PROJECT_TOP="chip.v"
 EN64="--64bit"
 READ_WRITE_SETTINGS="--read_settings_files=on --write_settings_files=off"
 GIT_REPO="$HOME/Triumph2-MkII"
 ASIC_CONFIG="$HOME/Triumph2-MkII/rtl/inc/global_config_dsp.inc"
+MEM_CONFIG="$HOME/Triumph2-MkII/rtl/top/core/mem_mux/mm_pkg.v"
 JIC_CONF="output_file_sl340.cof"
 ERROR_PRINT=1
 ONLYMAP=0
+
+function safe_exit() {
+    if [ -e mapfit.pid ]
+    then
+        pkill -F mapfit.pid -x "quartus_map|quartus_fit"
+        rm mapfit.pid
+        echo -e "\nKill done"
+    else
+        echo -e "\nNothing to kill"
+    fi
+    exit
+}
+trap "safe_exit" INT
 
 #Check map or fit logs for errors
 case "$1" in
@@ -59,8 +74,11 @@ function timer() {
     do
         phour=`expr $PTIME / 60`
         pminute=`expr $PTIME - 60 \* $phour`
-        pminute_out=
-        echo -ne "\rTime $phour:$pminute "
+        if [ $pminute -lt 10 ]
+        then
+            pminute=`echo 0$pminute`
+        fi
+        echo -ne "\rTime 0$phour:$pminute"
         PTIME=`expr $PTIME + 1`
         sleep 1m
     done
@@ -69,25 +87,31 @@ function timer() {
 WINDOWS_NUMBER=`grep -m 1 WINDOWS_NUMBER $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 CHAN_NUMBER_IN_WINDOW=`grep -m 1 CHAN_NUMBER_IN_WINDOW $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 CHANNELS_NUMBER=`expr $WINDOWS_NUMBER \* $CHAN_NUMBER_IN_WINDOW`
-CHANNELS_NUMBER_EXT=`grep -m 1 CHANNELS_NUMBER_EXT $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 CHANNELS_QL_NUMBER=`grep -m 1 CHANNELS_QL_NUMBER $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
-CHANNELS_NUMBER_ALL=`expr $CHANNELS_NUMBER + $CHANNELS_NUMBER_EXT`
 CHANNELS_QL_ENABLE=`grep -m 1 CHANNELS_QL_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
 CHANNELS_QL=`expr $CHANNELS_QL_NUMBER \* $CHANNELS_QL_ENABLE`;
 FAST_ACQUISITION_LENGTH=`grep -m 1 FAST_ACQUISITION_LENGTH $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
 FILTERS_WB_ENABLE=`grep FILTERS_WB_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "h" -f2`
 FFT_OUT_ENABLE=`grep FFT_OUT_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
-AJM_ENABLE=`grep AJM_ENABLE $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
-FAJ_NUMBER=`grep -m 1 FIR_AJM_NUMBER $ASIC_CONFIG | awk '{print $4}' | cut -d ";" -f1`
+AJM_ENABLE=`grep AJM_ENABLE $ASIC_CONFIG -m 1 | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+FIR_AJM_ENABLE=`grep FIR_AJM_ENABLE $ASIC_CONFIG -m 1 | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+CPLX_GEN_ENABLE=`grep CPLX_GEN_ENABLE $ASIC_CONFIG -m 1 | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+IQ_CORRECTIONS_ENABLE=`grep IQ_CORRECTIONS_ENABLE $ASIC_CONFIG -m 1 | awk '{print $4}' | cut -d ";" -f1 | cut -d "b" -f2`
+
+DECODER=`grep -E '^\`define .*_DECODER' $PROJECT_TOP | awk '{print $2}' | tr '\n' ' '`
+if [ -z "$DECODER" ]
+then
+    DECODER=None
+fi
 
 case "$FILTERS_WB_ENABLE" in
-    001)        FILTERS_WB_NUMBER=1;;
-    003)        FILTERS_WB_NUMBER=2;;
-    007)        FILTERS_WB_NUMBER=3;;
-    00f|00F)    FILTERS_WB_NUMBER=4;;
-    *)          echo "Filters number not defined"
-                exit
-                ;;
+    0001)    FILTERS_WB_NUMBER=1;;
+    0003)    FILTERS_WB_NUMBER=2;;
+    0007)    FILTERS_WB_NUMBER=3;;
+    000[fF]) FILTERS_WB_NUMBER=4;;
+    001[fF]) FILTERS_WB_NUMBER=5;;
+    *)       echo "Filters number not defined"
+             exit;;
 esac
 
 cd $GIT_REPO
@@ -97,12 +121,19 @@ cd -
 
 echo -e "$GIT_COMMIT\n" | tee config_last
 
-echo -e "Date     : `date`
-    \rChannels : ${CHANNELS_NUMBER_ALL}(${CHANNELS_NUMBER}MC+${CHANNELS_NUMBER_EXT}) + ${CHANNELS_QL}QL
-    \rFA Length: $FAST_ACQUISITION_LENGTH
-    \rFilters  : $FILTERS_WB_NUMBER + ${FAJ_NUMBER}FAJ
-    \rAJM ena  : $AJM_ENABLE
-    \rFFT ena  : $FFT_OUT_ENABLE" | tee --append config_last
+MM_BLOCKS=`grep "parameter BLOCKS" "$MEM_CONFIG"  | cut -d "=" -f2 | cut -c1,2`
+
+echo -e "Date          : `date`
+    \rChannels      : ${CHANNELS_NUMBER}MC + ${CHANNELS_QL}QL
+    \rFA Length     : $FAST_ACQUISITION_LENGTH
+    \rFilters       : $FILTERS_WB_NUMBER
+    \rMM Blocks     : $MM_BLOCKS
+    \rAJM ena       : $AJM_ENABLE
+    \rFAJ ena       : $FIR_AJM_ENABLE
+    \rFFT ena       : $FFT_OUT_ENABLE
+    \rCPLX_GEN ena  : $CPLX_GEN_ENABLE
+    \rIQC ena       : $IQ_CORRECTIONS_ENABLE
+    \rDecoder(s)    : $DECODER" | tee --append config_last
 
 cat $ASIC_CONFIG >> config_last
 
@@ -162,7 +193,7 @@ then
     jic_seq_pre=`cat jic_sec_number`
     JIC_SEQ=`expr $jic_seq_pre + 1`
     echo $JIC_SEQ > jic_sec_number
-    JIC_NAME=`echo avt2_${JIC_SEQ}_chan${CHANNELS_NUMBER_ALL}_filt${FILTERS_WB_NUMBER}_fft${FFT_OUT_ENABLE}_mf${FAST_ACQUISITION_LENGTH}_${GIT_COMMIT_SHORT}`
+    JIC_NAME=`echo avt2_${JIC_SEQ}_chan${CHANNELS_NUMBER}_filt${FILTERS_WB_NUMBER}_fft${FFT_OUT_ENABLE}_mf${FAST_ACQUISITION_LENGTH}_${GIT_COMMIT_SHORT}`
     sed -i -e "s/<output_filename>.*<\/output_filename>/<output_filename>$JIC_NAME.jic<\/output_filename>/" $JIC_CONF
     quartus_cpf -c $JIC_CONF > /dev/null
     cp config_last $JIC_NAME.config

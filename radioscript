@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#sudo chown vascom /dev/radio0
+#sudo chown vascom /dev/radio
+#sudo chown vascom /dev/dsp1
+#sudo chown vascom /dev/dsp
+ass=`ps -C gnomeradio | grep gnomeradio`
+if echo "$ass" | grep -q "gnomeradio"
+    then :
+    else gnomeradio 2>/dev/null &
+fi
+#sox -r 48000 -t ossdsp /dev/dsp1 -t ossdsp /dev/dsp
+arecord -D hw:1,0 -r96000 -c2 -f S16_LE  2>/dev/null | artsdsp aplay -D hw:0,0 -B - &>/dev/null &
+
+ass=`ps -C gnomeradio | grep gnomeradio`
+while echo "$ass" | grep -q "gnomeradio"
+do
+    sleep 10
+    ass2=`ps -C arecord | grep arecord`
+    if echo "$ass2" | grep -q "arecord"
+        then :
+        else arecord -D hw:1,0 -r96000 -c2 -f S16_LE  2>/dev/null | artsdsp aplay -D hw:0,0 -B - &>/dev/null &
+    fi
+    ass=`ps -C gnomeradio | grep gnomeradio`
+    if echo "$ass" | grep -q "gnomeradio"
+        then :
+        else killall arecord
+    fi
+done

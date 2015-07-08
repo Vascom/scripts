@@ -20,7 +20,7 @@ fi
 case $dist_short in
     [67])       dist="dist-el$dist_short";;
     rawhide)    dist="dist-rfr-rawhide";;
-    21)         dist="dist-rfr$dist_short-devel";;
+    #22)         dist="dist-rfr$dist_short-devel";;
     *)          dist="dist-rfr$dist_short";;
 esac
 

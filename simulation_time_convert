@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+    simulation_time_file="simulation_time"
+else
+    simulation_time_file="$1"
+fi
+
+time_data=`grep -E [0-9] "$simulation_time_file" | grep -Ev [a-zA-Z]`
+time_start=`echo "$time_data" | head -n 1`
+time_stop=`echo "$time_data" | tail -n 1`
+time_work=`expr $time_stop - $time_start`
+
+if [ $time_work -gt "60" ]
+then
+    time_work_minutes=`expr $time_work / 60`
+    if [ $time_work_minutes -gt 60 ]
+    then
+        time_work_hour=`expr $time_work_minutes / 60`
+        time_work_hour_rem=`expr $time_work_minutes - $time_work_hour \* 60`
+        echo "$time_work_hour hours $time_work_hour_rem minutes"
+    else
+        echo "$time_work_minutes minutes"
+    fi
+else
+    echo "$time_work seconds"
+fi

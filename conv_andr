@@ -2,7 +2,7 @@
 
 #This script resize big images for my Android device
 
-INPUT_FORMAT=JPG
+INPUT_FORMAT=png
 
 if [ -z "$1" -o -z "$2" ]
 then

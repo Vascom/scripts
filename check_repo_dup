@@ -1,0 +1,18 @@
+#!/bin/bash
+
+repo_f=`dnf list available --disablerepo=* --enablerepo=russianfedora-free  -q \
+| grep -v "@System" | cut -d "." -f1 | grep -v russianfedora-free | tail -n +2 | uniq | grep -Ev " [0-9]"`
+#echo "$repo_f"
+
+for pkg in $repo_f
+do
+    #echo -e "\e[32m${pkg}\e[0m"
+    all_pkg=`dnf list $pkg --showduplicates -q | grep -Ev "Доступные|@System"`
+    #echo "$all_pkg"
+    found=`echo "$all_pkg" | grep -v russianfedora-free -c`
+    if [ $found -gt 0 ]
+    then
+        echo -e "\e[31m${pkg}\e[0m"
+        echo "$all_pkg"
+    fi
+done

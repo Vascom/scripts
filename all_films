@@ -2,15 +2,20 @@
 
 if [ "$1" = "list" ]
 then
-    if [ ! -e "/media/data_2tb1" ]
+    if [ -e "/run/media/vascom/data_2tb1" ]
     then
-        #du -h --max-depth=2 /media/data_2tb1/Фильмы/ | cut -f 2 |
-        #grep -xv -E "/media/data_2tb1/Фильмы/0-9|/media/data_2tb1/Фильмы/[А-ЯЁ]" |
-        #sort | tail -n +2 > ~/films_0
+        rm films_*
+        for path in "/run/media/vascom/data_2tb1/Фильмы/" "/run/media/vascom/data2/Фильмы/"
+        do
+            du -h --max-depth=2 "$path" | cut -f 2 | \
+            grep -xv -E "${path}[А-ЯЁ]" | \
+            sort | tail -n +2 >> ~/films_0
+            ls -lah $path -R | grep -v итого | grep -v drwx >> films_2
+        done
 
         du -h --max-depth=2 /media/7ce1b5c3-7599-45f0-9299-e5e8c656e1de/Фильмы\ отечественные/* | cut -f 2 | sort >> ~/films_0
         #du -h --max-depth=2 /media/data_2tb1/Мультфильмы/* | cut -f 2 | sort >> ~/films_0
-        cut -d "/" -f 4,5,6 ~/films_0 > ~/films_1
+        cut -d "/" -f 8,9,10 ~/films_0 > ~/films_1
         echo "films_0 - list with full paths"
         echo "films_1 - list with only films names"
     else
