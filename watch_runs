@@ -1,0 +1,16 @@
+#!/bin/bash
+
+PROJECT_DIR=`basename $PWD`
+
+for impl in $@
+#while [ -z `grep Exiting $PWD/$PROJECT_DIR.runs/impl_$1/runme.log` ]
+do
+    finished=`grep Exiting $PWD/$PROJECT_DIR.runs/impl_$impl/runme.log`
+    if [ -z "$finished" ]
+    then
+        phase=`grep Phase $PWD/$PROJECT_DIR.runs/impl_$impl/runme.log | tail -n 1`
+    else
+        phase="Finished"
+    fi
+    echo -e "impl_$impl $phase"
+done

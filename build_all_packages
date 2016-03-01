@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #Parameters
-SEQ=( 6 7 rawhide 22 21 20 )
+SEQ=( 6 7 rawhide 23 22 21 )
 SEQ_NUM=( 4 5 6 7 8 9 )
 NAME_FIELD=f1
 LINES_FIELD=f2
 GITREV_FIELD=f3
 SCRATCH_FIELD=f13
 ENABLE_FIELD=f14
-SLEEP_FAST=300
-SLEEP_SLOW=30
+SLEEP_FAST=10
+SLEEP_SLOW=10
 
 
 task_count=0
@@ -35,13 +35,13 @@ do
                 scratch=`echo $n | cut -d "," -$SCRATCH_FIELD`
                 if [[ "$scratch" = "-" || "$2" = "test" ]]
                 then
-                    scratch_build="test"
+                    scratch_build="--scratch"
                 else
                     scratch_build=""
                 fi
 
                 echo "Building $pkg_name $build"
-                ./koji_run $pkg_name $pkg_rev $build $scratch_build quiet
+                ./koji_run build $pkg_name $pkg_rev $build $scratch_build --quiet
 
                 if [ $task_count -lt 3 ]
                 then sleep $SLEEP_FAST

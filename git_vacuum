@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+    echo Usage: git_vacuum path_to_main_folder
+    exit
+fi
+
+for dir in `ls "$1"`
+do
+    cd "$1/$dir"
+    if [ -e .git ]
+    then
+        git gc
+    fi
+    cd -
+done

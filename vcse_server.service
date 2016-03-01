@@ -1,0 +1,13 @@
+[Unit]
+Description=Vivado VCSE Server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/screen -D -m -S VCSE /opt/Xilinx/Vivado/2015.4/bin/vcse_server
+ExecStop=/usr/bin/screen -S VCSE -X quit
+TimeoutSec=0
+User=vascom
+
+[Install]
+WantedBy=multi-user.target

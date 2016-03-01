@@ -8,6 +8,7 @@ GIT_REPO="$HOME/Triumph2-MkII"
 ASIC_CONFIG="$HOME/Triumph2-MkII/rtl/inc/global_config_dsp.inc"
 MEM_CONFIG="$HOME/Triumph2-MkII/rtl/top/core/mem_mux/mm_pkg.v"
 JIC_CONF="output_file_sl340.cof"
+CPU_CONFIG="config_l4_smp.vhd"
 ERROR_PRINT=1
 ONLYMAP=0
 
@@ -59,7 +60,10 @@ do
 done
 
 function send_email() {
-    ssh vascom@172.17.0.236 "DISPLAY=:0 notify-send Задание\ выполнено\ $1 Проект\ `basename $PWD`"
+    if [ "$USER" == "vglazov" ]
+    then
+        ssh vascom@172.17.0.236 "DISPLAY=:0 notify-send Задание\ выполнено\ $1 Проект\ `basename $PWD`"
+    fi
 }
 
 function timer() {
@@ -104,6 +108,23 @@ then
     DECODER=None
 fi
 
+CPU_IS=`grep CFG_ISETS -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_ISZ=`grep CFG_ISETSZ -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_IREPL=`grep CFG_IREPL -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_DS=`grep CFG_DSETS -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_DSZ=`grep CFG_DSETSZ -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_DREPL=`grep CFG_DREPL -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_IC=`expr $CPU_IS \* $CPU_ISZ`
+CPU_DC=`expr $CPU_DS \* $CPU_DSZ`
+CPU_CONF=`echo $CPU_IC+$CPU_DC kB, REPL $CPU_IREPL $CPU_DREPL`
+
+CPU_L2EN=`grep CFG_L2_PEN -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_L2_S=`grep CFG_L2_SIZE -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_L2_W=`grep CFG_L2_WAYS -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+CPU_L2=`echo "$CPU_L2EN*$CPU_L2_S*$CPU_L2_W" | bc`
+
+CPU_IRAM=`grep CFG_IRAM_KBYTES -m 1 $CPU_CONFIG | awk '{print $6}' | cut -d ';' -f1`
+
 case "$FILTERS_WB_ENABLE" in
     0001)    FILTERS_WB_NUMBER=1;;
     0003)    FILTERS_WB_NUMBER=2;;
@@ -121,7 +142,7 @@ cd -
 
 echo -e "$GIT_COMMIT\n" | tee config_last
 
-MM_BLOCKS=`grep "parameter BLOCKS" "$MEM_CONFIG"  | cut -d "=" -f2 | cut -c1,2`
+MM_BLOCKS=`grep "parameter BLOCKS" "$MEM_CONFIG"  | cut -d "=" -f2 | cut -d ";" -f1`
 
 echo -e "Date          : `date`
     \rChannels      : ${CHANNELS_NUMBER}MC + ${CHANNELS_QL}QL
@@ -133,7 +154,10 @@ echo -e "Date          : `date`
     \rFFT ena       : $FFT_OUT_ENABLE
     \rCPLX_GEN ena  : $CPLX_GEN_ENABLE
     \rIQC ena       : $IQ_CORRECTIONS_ENABLE
-    \rDecoder(s)    : $DECODER" | tee --append config_last
+    \rDecoder(s)    : $DECODER
+    \rCPU L1        : $CPU_IC I + $CPU_DC D kB, REPL $CPU_IREPL $CPU_DREPL
+    \rCPU L2        : $CPU_L2 kB
+    \rCPU AHB RAM   : $CPU_IRAM kB" | tee --append config_last
 
 cat $ASIC_CONFIG >> config_last
 

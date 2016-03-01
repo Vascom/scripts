@@ -1,48 +1,54 @@
 #!/bin/bash
 
+function help_usage() {
+    echo -e "Format isn't correct!"
+    echo -e "Use \e[1;30mkoji_run build project_name commit_number dist_number\e[0m to build package"
+    echo -e "Use \e[1;30mkoji_run regen dist\e[0m to repos regen"
+    echo -e "Use \e[1;30mkoji_run add-pkg project_name owner dist1 dist2 dist3 \e[0m to add package"
+    exit
+}
+
 if [ -z "$1" -o -z "$2" ]
 then
-    echo "Format isn't correct!"
-    echo "Use koji_run project_name commit_number dist_number"
-    echo "Use koji_run regen number for repos regen"
-    exit
+    help_usage
 fi
 
 koji_config="/etc/koji-rf.conf"
 
-if [ "$1" = "regen" ]
-then
-    dist_short="$2"
-else
-    dist_short="$3"
-fi
-
-case $dist_short in
-    [67])       dist="dist-el$dist_short";;
-    rawhide)    dist="dist-rfr-rawhide";;
-    #22)         dist="dist-rfr$dist_short-devel";;
-    *)          dist="dist-rfr$dist_short";;
+function dist_expand() {
+    case $1 in
+        [67])       dist="dist-el$1";;
+        rawhide)    dist="dist-rfr-rawhide";;
+#        23)         dist="dist-rfr$1-devel";;
+        *)          dist="dist-rfr$1";;
+    esac
+}
+# dist_expand $3
+# echo "koji $5 -c $koji_config build $4 $dist git://github.com/RussianFedora/$1.git?#$2"
+case $1 in
+    "regen")
+        dist_expand $2
+        koji -c $koji_config regen-repo $dist-build;;
+    "add-pkg")
+        args=("$@")
+        args_n=`expr $# - 1`
+        echo -en "Added $2 to "
+        for i in `seq 3 $args_n`
+        do
+            dist_expand ${args[$i]}
+            echo -en "${args[$i]} "
+            koji -c $koji_config add-pkg $dist $2 --owner=$3
+        done
+        echo -en "\n";;
+    "build")
+        if [ -z "$4" ]
+        then
+            echo "Need first dist_number"
+        else
+            dist_expand $4
+            #echo "koji -c $koji_config build $5 $dist git://github.com/RussianFedora/$2.git?#$3 1>/dev/null"
+            koji -c $koji_config build $5 $dist git://github.com/RussianFedora/$2.git?#$3 1>/dev/null &
+        fi;;
+    *)
+        help_usage;;
 esac
-
-if [ "$4" = "test" ] || [ "$5" = "test" ]
-then
-    test="--scratch"
-fi
-
-if [ "$4" = "quiet" ] || [ "$5" = "quiet" ]
-then
-    quiet="--quiet"
-fi
-
-if [ "$1" = "regen" ]
-then
-    koji -c $koji_config regen-repo $dist-build
-    exit 0
-fi
-
-if [ -z "$3" ]
-then
-    echo "Need first dist_number"
-else
-    koji $quiet -c $koji_config build $test $dist git://github.com/RussianFedora/$1.git?#$2 1>/dev/null &
-fi

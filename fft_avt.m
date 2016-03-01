@@ -21,11 +21,18 @@ end
 if nargin < 4
     use_window = 1;
 end
+
+%Check if we in Octave or Matlab and load additional library for Octave
+vers = version;
+if (str2num(vers(1)) >= 7)
+else
+    pkg load signal
+end
 %================================================
 %Variables for change
 
 %Filename of input data
-%data_file = "f0";
+%data_file = 'f0';
 %data must be in one or two (for complex mode) columns with " " delimiter
 
 %Sampling frequency, MHz
@@ -51,16 +58,16 @@ if test_mode == 1
     snoi = normrnd(0,0.1,2^20,1);
     f4 = ssin' + snoi;
     [nr,nc] = size(f4);
-    cplx_mode = "real";
+    cplx_mode = 'real';
 else
     f_pre = load(data_file);
     [nr,nc] = size(f_pre);
     if nc == 1
         f4 = f_pre;
-        cplx_mode = "real";
+        cplx_mode = 'real';
     else
         f4 = complex(f_pre(:,1),f_pre(:,2));
-        cplx_mode = "complex";
+        cplx_mode = 'complex';
     end
 end
 
@@ -68,10 +75,10 @@ fft_samples=2^smpl;
 fft_samples_half=fft_samples/2;
 number_dia=length(f4)/fft_samples;
 
-printf("Total %d %s samples (FFT %d samples and %d diapasons)\n",length(f4),cplx_mode,fft_samples,number_dia);
-printf("FFT precision: %d Hz (smpl = %d); MAX %d Hz (smpl = %d)\n",Fs*1e6/fft_samples,smpl,Fs*1e6/length(f4),log2(length(f4)));
+fprintf('Total %d %s samples (FFT %d samples and %d diapasons)\n',length(f4),cplx_mode,fft_samples,number_dia);
+fprintf('FFT precision: %d Hz (smpl = %d); MAX %d Hz (smpl = %d)\n',Fs*1e6/fft_samples,smpl,Fs*1e6/length(f4),log2(length(f4)));
 
-pkg load signal
+%Use Hann window or not
 if use_window == 1
     hann_coeffs = hann(fft_samples);
 else
@@ -88,7 +95,8 @@ for k=1:number_dia
 end
 f0_sum = 20*log10(f0_sum/max(f0_sum));
 
-if Fs > 120
+%Plot graphs
+if Fs > 150
     fr=(1:fft_samples_half)/fft_samples_half*Fs/2+Fs/2;
     for_plot = f0_sum(fft_samples_half+1:end);
 else
@@ -102,9 +110,9 @@ else
 end
 
 plot(fr,for_plot,plot_color)
-axis("tight")
+axis('tight')
 grid on
 hold off
-title ("Amplitude Frequency Characteristic");
-xlabel ("Frequency, MHz");
-ylabel ("Amplitude, dB");
+title ('Amplitude Frequency Characteristic');
+xlabel ('Frequency, MHz');
+ylabel ('Amplitude, dB');

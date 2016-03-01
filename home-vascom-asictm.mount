@@ -1,5 +1,5 @@
 [Unit]
-Description=Mount asic-tm /sas folder
+Description=Mount asic-tm folder
 Requires=network.target   
 After=network.target 
 After=remote-fs.target
@@ -8,7 +8,6 @@ After=remote-fs.target
 What=172.17.0.205:/home/vglazov
 Where=/home/vascom/asictm
 Type=nfs4
-#Options=vers=4,rw
 
 [Install]
 WantedBy=multi-user.target
