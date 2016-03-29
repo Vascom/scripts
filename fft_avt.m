@@ -22,6 +22,10 @@ if nargin < 4
     use_window = 1;
 end
 
+if nargin < 3
+    error('Not enougth arguments');
+end
+
 %Check if we in Octave or Matlab and load additional library for Octave
 vers = version;
 if (str2num(vers(1)) >= 7)
@@ -73,16 +77,16 @@ end
 
 fft_samples=2^smpl;
 fft_samples_half=fft_samples/2;
-number_dia=length(f4)/fft_samples;
+number_dia=floor(length(f4)/fft_samples);
 
-fprintf('Total %d %s samples (FFT %d samples and %d diapasons)\n',length(f4),cplx_mode,fft_samples,number_dia);
+fprintf('Total %d %s samples (FFT %d samples and %d full diapasons)\n',length(f4),cplx_mode,fft_samples,number_dia);
 fprintf('FFT precision: %d Hz (smpl = %d); MAX %d Hz (smpl = %d)\n',Fs*1e6/fft_samples,smpl,Fs*1e6/length(f4),log2(length(f4)));
 
 %Use Hann window or not
 if use_window == 1
     hann_coeffs = hann(fft_samples);
 else
-    hann_coeffs = ones(1,fft_samples)';
+    hann_coeffs = ones(fft_samples,1);
 end
 
 for k=1:number_dia
