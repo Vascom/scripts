@@ -2,9 +2,9 @@
 
 function help_usage() {
     echo -e "Format isn't correct!"
-    echo -e "Use \e[1;30mkoji_run build project_name commit_number dist_number\e[0m to build package"
-    echo -e "Use \e[1;30mkoji_run regen dist\e[0m to repos regen"
-    echo -e "Use \e[1;30mkoji_run add-pkg project_name owner dist1 dist2 dist3 \e[0m to add package"
+    echo -e "Use \e[1;30m$0 \e[32mbuild\e[0m project_name commit_number dist_number\e[0m to build package"
+    echo -e "Use \e[1;30m$0 \e[32mregen dist\e[0m to repos regen"
+    echo -e "Use \e[1;30m$0 \e[32madd-pkg\e[0m project_name owner dist1 dist2 dist3 \e[0m to add package"
     exit
 }
 
@@ -19,7 +19,7 @@ function dist_expand() {
     case $1 in
         [67])       dist="dist-el$1";;
         rawhide)    dist="dist-rfr-rawhide";;
-#        23)         dist="dist-rfr$1-devel";;
+        24)         dist="dist-rfr$1-devel";;
         *)          dist="dist-rfr$1";;
     esac
 }
