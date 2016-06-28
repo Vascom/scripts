@@ -12,7 +12,7 @@ do
         if [ -e $ROUTE_FILE$arg/.route_design.end.rst ] && [ ! -e $MSG_FILE$arg/msg_send ]
         then
             echo a0
-            ssh vascom@v-glazov "echo Разводка\ завершена\ asic-tm\ $arg | mutt -x -s Route_asic-tm_$arg vascom2@gmail.com"
+            ssh vascom@v-glazov "echo Разводка\ завершена\ $HOSTNAME\ $arg | mutt -x -s Route_$HOSTNAME_$arg vascom2@gmail.com"
             touch $MSG_FILE$arg/msg_send
             n=$[$n+1]
         fi
