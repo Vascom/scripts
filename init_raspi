@@ -4,8 +4,10 @@ yd_remote_directory="/home/vascom/yandex.disk/"
 gd_remote_directory="/home/vascom/google.drive/"
 secure_section_from="/home/vascom/yandex.disk/.secure/"
 secure_section_to="/home/vascom/secure"
+secure_section_check="$secure_section_to/kva/"
 secure_ftp_from="/home/vascom/.secure_ftp/"
 secure_ftp_to="/home/vascom/secure_ftp/"
+secure_ftp_check="$secure_ftp_to/torrents/"
 yd_pid_file="/var/run/mount.davfs/home-vascom-yandex.disk.pid"
 cd_pid_file="/var/run/chronyd.pid"
 cronyd_delay=10
@@ -16,27 +18,13 @@ sda1_mountpoint="/home/vascom/sda1"
 sdb1_mountpoint="/home/vascom/sdb1"
 sda1_mounted="$sda1_mountpoint/downloads"
 
-function secure_section() {
-    if [ ! -e $secure_section_to/kva/ ]
+function secure_mount() {
+    if [ ! -e $3 ]
     then
         echo -ne "Mount \e[31msecure\e[0m section? (Y/n) "
         read item
         case "$item" in
-            y|Y|"") encfs $secure_section_from $secure_section_to
-                ;;
-            *) echo "Exit"
-                ;;
-        esac
-    fi
-}
-
-function secure_ftp() {
-    if [ ! -e $secure_ftp_to/torrents/ ]
-    then
-        echo -ne "Mount \e[31msecure\e[0m FTP section? (Y/n) "
-        read item
-        case "$item" in
-            y|Y|"") encfs $secure_ftp_from $secure_ftp_to
+            y|Y|"") encfs "$1" "$2"
                 ;;
             *) echo "Exit"
                 ;;
@@ -56,7 +44,7 @@ function yandex_disk_check() {
     if systemctl status home-vascom-yandex.disk.mount &>/dev/null
     then
         echo -e "Yandex.Disk \e[32mOK\e[0m"
-        secure_section
+        secure_mount $secure_section_from $secure_section_to $secure_section_check
     else
         echo -e "yandex.disk mount \e[31mFAILED\e[0m"
     fi
@@ -135,10 +123,10 @@ echo "Starting at temperature: `sensors | grep temp | cut -d "+" -f2`"
 
 service_check chronyd
 #yandex_disk_check
-secure_ftp
+secure_mount $secure_ftp_from $secure_ftp_to $secure_ftp_check
 #google_mount
 disks_mount_check
-service_check noip
+#service_check noip
 service_check nfs
 service_check lighttpd
 service_check pure-ftpd

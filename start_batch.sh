@@ -49,6 +49,7 @@ case "$1" in
                 exit;;
 esac
 
+#ssh server tailf /var/log/task.log | grep finished | while read msg; do send-notify "task finished: $msg"; done
 #Check Quartus binaries in user PATH
 for q_bin in quartus_map quartus_cdb quartus_fit quartus_sta quartus_asm quartus_cpf
 do
@@ -60,9 +61,10 @@ do
 done
 
 function send_email() {
-    if [ "$USER" == "vglazov" ]
+    ping -q -c4 v-glazov >/dev/null
+    if [ "$USER" == "vglazov" ] && [ $? -eq 0 ]
     then
-        ssh vascom@172.17.0.236 "DISPLAY=:0 notify-send Задание\ выполнено\ $1 Проект\ `basename $PWD`"
+        ssh vascom@v-glazov "DISPLAY=:0 notify-send Задание\ выполнено\ $1 Проект\ `basename $PWD`"
     fi
 }
 

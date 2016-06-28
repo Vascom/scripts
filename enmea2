@@ -90,6 +90,13 @@ popd
 
 rm -f "$2"
 
+function write_sat() {
+    if [ -n "${sv_number[$1]}" ]
+    then
+        sat_v[${sv_number[$1]}]=`echo "$one_string" | cut -d "," -f$2`
+    fi
+}
+
 function part_processing() {
     local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
     local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
@@ -100,7 +107,7 @@ function part_processing() {
     local GGA_decode_counter
     local total_messages
     local message_number
-    local sv_number
+    local sv_number=( 0 1 2 3 )
 
     local total_GGA=`grep -c GGA "$1"`
     local FILE_IN=`grep -E "GGA|GSV" $1  | cut -d "*" -f1`
@@ -151,32 +158,35 @@ function part_processing() {
             message_number=`echo "$one_string" | cut -d "," -f3`
     #         TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
 
-            sv_number=`echo "$one_string" | cut -d "," -f5`
+            sv_number[0]=`echo "$one_string" | cut -d "," -f5`
+            sv_number[1]=`echo "$one_string" | cut -d "," -f9`
+            sv_number[2]=`echo "$one_string" | cut -d "," -f13`
+            sv_number[3]=`echo "$one_string" | cut -d "," -f17`
     #             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
     #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
-            sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f8`
-#             sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
 
-            sv_number=`echo "$one_string" | cut -d "," -f9`
-            if [ -n "$sv_number" ]
-            then
-                sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f12`
-#                 sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
-
-                sv_number=`echo "$one_string" | cut -d "," -f13`
-                if [ -n "$sv_number" ]
-                then
-                    sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f16`
-#                     sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
-
-                    sv_number=`echo "$one_string" | cut -d "," -f17`
-                    if [ -n "$sv_number" ]
-                    then
-                        sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f20`
-#                         sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
-                    fi
-                fi
-            fi
+            write_sat 0 8  &
+            write_sat 1 12 &
+            write_sat 2 16 &
+            write_sat 3 20 &
+            wait
+#             sat_v[${sv_number[0]}]=`echo "$one_string" | cut -d "," -f8`
+# #             sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#             if [ -n "${sv_number[1]}" ]
+#             then
+#                 sat_v[$sv_number[1]]=`echo "$one_string" | cut -d "," -f12`
+# #                 sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                 if [ -n "${sv_number[2]}" ]
+#                 then
+#                     sat_v[${sv_number[2]}]=`echo "$one_string" | cut -d "," -f16`
+# #                     sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                     if [ -n "${sv_number[3]}" ]
+#                     then
+#                         sat_v[${sv_number[3]}]=`echo "$one_string" | cut -d "," -f20`
+# #                         sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+#                     fi
+#                 fi
+#             fi
 
             if [ "$total_messages" == "$message_number" ]
             then

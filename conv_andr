@@ -21,7 +21,7 @@ fi
 
 if [[ -z "$3" || $3 == 0 ]]
 then
-    THREADS=`cat /proc/cpuinfo | grep -c processor`
+    THREADS=`grep -c processor /proc/cpuinfo`
 else
     THREADS=$3
 fi

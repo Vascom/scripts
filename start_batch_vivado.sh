@@ -15,12 +15,12 @@ function safe_exit() {
 trap "safe_exit" INT
 
 function synthesis() {
-    echo -e "Synthesis synth_1 \e[32mstart\e[0m"
-    $PWD/$PROJECT_DIR.runs/synth_1/runme.sh &
-    echo "$!" > synth_1.pid
+    echo -e "Synthesis synth_$1 \e[32mstart\e[0m"
+    $PWD/$PROJECT_DIR.runs/synth_$1/runme.sh &
+    echo "$!" > synth_$1.pid
     wait
-    rm synth_1.pid
-    echo -e "Synthesis synth_1 \e[32mdone\e[0m"
+    rm synth_$1.pid
+    echo -e "Synthesis synth_$1 \e[32mdone\e[0m"
 }
 
 function impl_timer() {

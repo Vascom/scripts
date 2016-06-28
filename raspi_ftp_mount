@@ -1,0 +1,5 @@
+#!/bin/bash
+
+user=`head -n 1 /home/vascom/.ssh/raspi_ftp`
+password=`tail -n 1 /home/vascom/.ssh/raspi_ftp`
+curlftpfs ${user}:${password}@vascom.myftp.org:8021 /home/vascom/raspi

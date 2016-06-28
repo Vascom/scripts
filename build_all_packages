@@ -1,7 +1,22 @@
 #!/bin/bash
 
+default_config="/home/vascom/yandex.disk/rfr_package_builds.csv"
+
+if [ -z "$1" ]
+then
+    if [ -e $default_config ]
+    then
+        config_build=$default_config
+    else
+        echo "Config file for build not found."
+        exit 1
+    fi
+else
+    config_build=$1
+fi
+
 #Parameters
-SEQ=( 6 7 rawhide 23 22 21 )
+SEQ=( 6 7 rawhide 24 23 22 )
 SEQ_NUM=( 4 5 6 7 8 9 )
 NAME_FIELD=f1
 LINES_FIELD=f2
@@ -13,8 +28,8 @@ SLEEP_SLOW=10
 
 
 task_count=0
-number_lines=`head -n 1 $1 | cut -d "," -$LINES_FIELD`
-temp_line=`head -n $number_lines $1 | tail -n +2`
+number_lines=`head -n 1 $config_build | cut -d "," -$LINES_FIELD`
+temp_line=`head -n $number_lines $config_build | tail -n +2`
 
 for n in $temp_line
 do

@@ -32,6 +32,10 @@ if (str2num(vers(1)) >= 7)
 else
     pkg load signal
 end
+
+%Set frequency threshold for fast real input, MHz
+%If Fs less then FS_FAST it will be slow real or complex
+FS_FAST = 150;
 %================================================
 %Variables for change
 
@@ -89,18 +93,17 @@ else
     hann_coeffs = ones(fft_samples,1);
 end
 
+%Compute separate FFT for each part
 for k=1:number_dia
     f0_s(k,:) = abs(fft(hann_coeffs.*f4(1+fft_samples*(k-1):fft_samples*k)));
 end
 
-f0_sum = zeros(1,fft_samples);
-for k=1:number_dia
-    f0_sum = f0_sum + f0_s(k,:);
-end
+%Sum samples from each part and make logarithm
+f0_sum = sum(f0_s,1);
 f0_sum = 20*log10(f0_sum/max(f0_sum));
 
 %Plot graphs
-if Fs > 150
+if Fs > FS_FAST
     fr=(1:fft_samples_half)/fft_samples_half*Fs/2+Fs/2;
     for_plot = f0_sum(fft_samples_half+1:end);
 else
