@@ -90,9 +90,25 @@ popd
 
 rm -f "$2"
 
+# function write_sat() {
+# #     echo "$one_string"
+#     local sv_number=`echo "$one_string" | cut -d "," -f$1`
+#     if [ -n "$sv_number" ]
+#     then
+#         local sat_v_pre=`echo "$one_string" | cut -d "," -f$2`
+#         echo $sv_number $sat_v_pre
+#         if [ -z $sat_v_pre ]
+#         then
+# #             echo $sv_number $sat_v_pre
+#             sat_v[$sv_number]=$sat_v_pre
+# #             echo ${sat_v[$sv_number]}
+#         fi
+#     fi
+# }
+
 function part_processing() {
-    local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-    local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+    local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+    local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
     rm -f "$2"
     local navmes
     local message_time
@@ -113,6 +129,9 @@ function part_processing() {
         navmes=`echo "$one_string" | cut -d "," -f1 `
         if [ "$navmes" == "\$GPGGA" ]
         then
+            sat_v[0]=$message_time
+            echo "${sat_v[@]} $hdop" >> "$2"
+
             #message_time_H=`echo "$one_string" | cut -c8,9`
             #message_time_M=`echo "$one_string" | cut -c9,10`
             #message_time_S=`echo "$one_string" | cut -c11,12`
@@ -139,50 +158,61 @@ function part_processing() {
             #message_time=`echo "$one_string" | cut -d "," -f16`
             GGA_decode_counter=`expr $GGA_decode_counter + 1`
             #sat_v contain 33 vars: message_time + 32 satellites
-            sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+            sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
 
 #             if [ -z "$3" ]
 #             then
 #                 echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
 #             fi
-        elif [ "$navmes" == "\$GPGSV" ]
+        elif [ "$navmes" == "\$GPGSV" ] || [ "$navmes" == "\$GLGSV" ]
         then
-            total_messages=`echo "$one_string" | cut -d "," -f2`
-            message_number=`echo "$one_string" | cut -d "," -f3`
-    #         TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
-
+#             total_messages=`echo "$one_string" | cut -d "," -f2`
+#             message_number=`echo "$one_string" | cut -d "," -f3`
+#             TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
+#             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
+#             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
             sv_number=`echo "$one_string" | cut -d "," -f5`
-    #             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
-    #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
-            sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f8`
-#             sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+            sat_v_pre=`echo "$one_string" | cut -d "," -f8`
+            if [ -n "$sat_v_pre" ]
+            then
+                sat_v[$sv_number]=$sat_v_pre
+            fi
 
             sv_number=`echo "$one_string" | cut -d "," -f9`
             if [ -n "$sv_number" ]
             then
-                sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f12`
-#                 sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+                sat_v_pre=`echo "$one_string" | cut -d "," -f12`
+                if [ -n "$sat_v_pre" ]
+                then
+                    sat_v[$sv_number]=$sat_v_pre
+                fi
 
                 sv_number=`echo "$one_string" | cut -d "," -f13`
                 if [ -n "$sv_number" ]
                 then
-                    sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f16`
-#                     sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+                    sat_v_pre=`echo "$one_string" | cut -d "," -f16`
+                    if [ -n "$sat_v_pre" ]
+                    then
+                        sat_v[$sv_number]=$sat_v_pre
+                    fi
 
                     sv_number=`echo "$one_string" | cut -d "," -f17`
                     if [ -n "$sv_number" ]
                     then
-                        sat_v[$sv_number]=`echo "$one_string" | cut -d "," -f20`
-#                         sat_v[$sv_number]=`number_check ${sat_v[$sv_number]}`
+                        sat_v_pre=`echo "$one_string" | cut -d "," -f20`
+                        if [ -n "$sat_v_pre" ]
+                        then
+                            sat_v[$sv_number]=$sat_v_pre
+                        fi
                     fi
                 fi
             fi
 
-            if [ "$total_messages" == "$message_number" ]
-            then
-                sat_v[0]=$message_time
-                echo "${sat_v[@]} $hdop" >> "$2"
-            fi
+#             if [ "$total_messages" == "$message_number" ]
+#             then
+#                 sat_v[0]=$message_time
+#                 echo "${sat_v[@]} $hdop" >> "$2"
+#             fi
 
             #GSV_decode_counter=`expr $GSV_decode_counter + 1`
         else
@@ -200,7 +230,9 @@ function part_processing() {
 part_processing /tmp/x00 /tmp/nmea_decode_0 1 &
 part_processing /tmp/x01_tmp /tmp/nmea_decode_1 1 &
 wait
-cat /tmp/nmea_decode_0 /tmp/nmea_decode_1 > "$2"
+tail -n +2 /tmp/nmea_decode_0 > /tmp/nmea_decode_00
+tail -n +2 /tmp/nmea_decode_1 > /tmp/nmea_decode_11
+cat /tmp/nmea_decode_00 /tmp/nmea_decode_11 > "$2"
 #echo -e "\nGSV: $GSV_decode_counter"
 if [ -n "$3" ]
 then
@@ -209,7 +241,7 @@ fi
 #echo -e "\nUnknown: $unknown_decode_counter"
 
 echo -en "Detected all satellites numbers: "
-for ((k=2; k < 34 ; k++))
+for ((k=2; k < 98 ; k++))
 do
     check0=0
     check1=0
