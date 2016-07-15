@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# for k in `seq 80 -1 1`
+# do
+#     kpre=`expr $k - 1`
+#     k_n=`expr 81 - $k`
+#     kpre_n=`expr 80 - $k`
+#     echo "7'd$kpre_n : lms_coeff_s = {{5{coeff_lms_out_1[11*$k_n-1]}},coeff_lms_out_1[11*$k_n-1:11*$kpre_n],
+#     {5{coeff_lms_out_0[11*$k_n-1]}},coeff_lms_out_0[11*$k_n-1:11*$kpre_n]};"
+# done
+
+for k in `seq 0 39`
+do
+    k0=`expr $k \* 2`
+    k1=`expr $k0 + 1`
+    k2=`expr $k1 + 1`
+    echo "6'd$k : lms_coeff_s = {{5{coeff_lms_out_1[11*$k2-1]}},coeff_lms_out_1[11*$k2-1:11*$k1],
+        {5{coeff_lms_out_0[11*$k1-1]}},coeff_lms_out_0[11*$k1-1:11*$k0]};"
+done
