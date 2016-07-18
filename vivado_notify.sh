@@ -22,7 +22,7 @@ ROUTE_FILE=/.route_design.end.rst
 if [ `basename $0` = "vivado_notify_fulcrum.sh" ]
 then
     SERVER="vglazov@fulcrum"
-    EMAIL="v.glazov2@javad.com"
+    EMAIL="v.glazov@javad.com"
 else
     SERVER="vascom@v-glazov"
     EMAIL="vascom2@gmail.com"
