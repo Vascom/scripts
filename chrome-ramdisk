@@ -2,6 +2,7 @@
 
 shopt -s dotglob
 BACKUP_FILE="/home/vascom/ramdisk_chrome.tar"
+WARNING_THR=650000
 
 while [ ! -e /run/user/1000 ]
 do
@@ -13,7 +14,7 @@ cd /run/user/1000
 if [ "$1" = "save" ]
 then
     RAM_USE=`du -s chrome | awk '{print $1}'`
-    if [ $RAM_USE -gt 650000 ]
+    if [ $RAM_USE -gt $WARNING_THR ]
     then
         echo -e "Chrome cache warning\nRAM use: $RAM_USE" | mutt -x -s "Chrome cache ${HOSTNAME} $RAM_USE" vascom2@gmail.com
     fi
@@ -21,8 +22,6 @@ then
     tar cpf $BACKUP_FILE chrome/*
 elif [ "$1" = "restore" ]
 then
-    rm -rf chrome/*
-    mkdir -p chrome/config
-    mkdir chrome/cache
+    mkdir -p chrome/config chrome/cache
     tar xf $BACKUP_FILE
 fi
