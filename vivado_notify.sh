@@ -23,14 +23,26 @@ else
     EMAIL="vascom2@gmail.com"
 fi
 
-#Rename MCS file with GOOD/POOR/FAIL tag
+#Send e-mail with message about task
+function send_email() {
+    ssh $SERVER "echo -e Разводка\ завершена\ $HOSTNAME\ $PROJECT_DIR\ $1\ $3 | mutt -x -s Route_${2}_${HOSTNAME}_${PROJECT_DIR}_$1 ${EMAIL}"
+}
+
+#Rename MCS file with GOOD/POOR tag or remove if FAIL tag
 function rename_mcs() {
     while [ ! -e mcs/chip_auto_i$1.mcs ]
     do
         sleep 10
     done
     sleep 30
-    mv mcs/chip_auto_i$1.mcs mcs/chip_auto_i$1_$2.mcs
+
+    if [ "$2" != "FAIL" ]
+    then
+        mv mcs/chip_auto_i$1.mcs mcs/chip_auto_i$1_$2.mcs
+    else
+        rm mcs/chip_auto_i$1.*
+    fi
+    send_email $1 $2 $3
 }
 
 if [ "$1" = "full" ] && [ -n "$2" ]
@@ -68,10 +80,12 @@ then
         fi
     done
     echo -e "${Green}Tasks runned, now watching$Color_Off $@"
+    usemcs="1"
 elif [ "$1" = "check" ] && [ -n "$2" ]
 then
     shift
     echo -e "${Green}Watching$Color_Off $@"
+    usemcs="0"
 else
     echo -e "Please give ${Red}full/check$Color_Off and at least one FPGA implementation number."
     exit 1
@@ -111,10 +125,15 @@ do
 
             echo -e Routed $HOSTNAME $arg $COLOR$STATUS$Color_Off
 
-            #Send e-mail with message about task
-            ssh $SERVER "echo -e Разводка\ завершена\ $HOSTNAME\ $PROJECT_DIR\ $arg\ $TIMING | mutt -x -s Route_${STATUS}_${HOSTNAME}_${PROJECT_DIR}_$arg ${EMAIL}"
             state[$arg]=1
-            rename_mcs $arg $STATUS &
+            #Send e-mail immediately if checking or wait MCS if full
+            TIMING=`echo $TIMING | tr " " _`
+            if [ $usemcs = "1" ]
+            then
+                rename_mcs $arg $STATUS $TIMING &
+            else
+                send_email $arg $STATUS $TIMING
+            fi
 
             n=$[$n+1]
         fi
