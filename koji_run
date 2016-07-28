@@ -19,8 +19,8 @@ function dist_expand() {
     case $1 in
         [67])       dist="dist-el$1";;
         rawhide)    dist="dist-rfr-rawhide";;
-#         24)         dist="dist-rfr$1-devel";;
-        22|23|24)   dist="dist-rfr$1";;
+        25)         dist="dist-rfr$1-devel";;
+        23|24)   dist="dist-rfr$1";;
         *)          echo -e "\e[31mUnknown target!\e[0m"
                     exit 1;;
     esac
