@@ -3,10 +3,12 @@ Description=Vivado VCSE Server
 After=network.target
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/screen -D -m -S VCSE /opt/Xilinx/Vivado/2016.2/bin/vcse_server
-ExecStop=/usr/bin/screen -S VCSE -X quit
-TimeoutSec=0
+Type=forking
+ExecStart=/opt/Xilinx/HWSRVR/2016.2/bin/hw_server -d
+#ExecStart=/usr/bin/screen -D -m -S VCSE /opt/Xilinx/Vivado/2016.2/bin/vcse_server
+#ExecStart=/usr/bin/screen -m -D -m -S VCSE /usr/bin/echo aaa
+#ExecStop=/usr/bin/screen -S VCSE -X quit
+#TimeoutSec=0
 User=vascom
 
 [Install]
