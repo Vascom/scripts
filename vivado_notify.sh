@@ -12,6 +12,22 @@ PROJECT_DIR=`basename $PWD`
 WORK_PATH="$PROJECT_DIR.runs/impl_"
 ROUTE_FILE="/.route_design.end.rst"
 TIMING_FILE="/chip_timing_summary_routed.rpt"
+CONFIG_MCS_FILE=config_mcs.txt
+
+#Parsing config file
+if [ ! -e "$CONFIG_MCS_FILE" ]
+then
+    echo -e "Config file ${Red}config_mcs.txt$Color_Off not found"
+    exit 1
+fi
+
+all_configs=`tail -n 1 "$CONFIG_MCS_FILE"`
+aa=( 0 0 0 0 0 0 0 )
+for i in `seq 1 7`
+do
+    PAR[$i]=`echo $all_configs | cut -d " " -f$i`
+done
+MCS_CONF_NAME=${PAR[1]}_${PAR[2]}cpu_${PAR[3]}Miram_${PAR[6]}ch_${PAR[7]}filt_${PAR[5]}MHz_${PAR[4]}mm_i
 
 #If run via symlink use anothe ssh connection to send e-mail
 if [ `basename $0` = "vivado_notify_fulcrum.sh" ]
@@ -28,7 +44,7 @@ function send_email() {
     ssh $SERVER "echo -e Разводка\ завершена\ $HOSTNAME\ $PROJECT_DIR\ $1\ $3 | mutt -x -s Route_${2}_${HOSTNAME}_${PROJECT_DIR}_$1 ${EMAIL}"
 }
 
-#Rename MCS file with GOOD/POOR tag or remove if FAIL tag
+#Rename MCS file with GOOD/POOR/FAIL
 function rename_mcs() {
     while [ ! -e mcs/chip_auto_i$1.mcs ]
     do
@@ -36,11 +52,12 @@ function rename_mcs() {
     done
     sleep 30
 
-    if [ "$2" != "FAIL" ]
+    mv mcs/chip_auto_i$1.mcs mcs/$MCS_CONF_NAME$1_$2.mcs
+    if [ "$HOSTNAME" = "systech6" ]
     then
-        mv mcs/chip_auto_i$1.mcs mcs/chip_auto_i$1_$2.mcs
+        scp mcs/$MCS_CONF_NAME$1_$2.mcs asic-tm:/home/vglazov/mcs_backup/
     else
-        rm mcs/chip_auto_i$1.*
+        cp mcs/$MCS_CONF_NAME$1_$2.mcs ../mcs_sitara/
     fi
     send_email $1 $2 $3
 }
