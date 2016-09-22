@@ -22,7 +22,6 @@ then
 fi
 
 all_configs=`tail -n 1 "$CONFIG_MCS_FILE"`
-aa=( 0 0 0 0 0 0 0 )
 for i in `seq 1 7`
 do
     PAR[$i]=`echo $all_configs | cut -d " " -f$i`
