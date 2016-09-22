@@ -4,6 +4,7 @@ Description=Keep Chrome's RAM disk between power-offs
 [Service]
 Type=oneshot
 RemainAfterExit=true
+User=vascom
 ExecStart=/home/vascom/bin/chrome-ramdisk restore
 ExecStop=/home/vascom/bin/chrome-ramdisk save
 
