@@ -22,11 +22,11 @@ then
 fi
 
 all_configs=`tail -n 1 "$CONFIG_MCS_FILE"`
-for i in `seq 1 7`
+for i in `seq 1 8`
 do
     PAR[$i]=`echo $all_configs | cut -d " " -f$i`
 done
-MCS_CONF_NAME=${PAR[1]}_${PAR[2]}cpu_${PAR[3]}Miram_${PAR[6]}ch_${PAR[7]}filt_${PAR[5]}MHz_${PAR[4]}mm_i
+MCS_CONF_NAME=${PAR[1]}_${PAR[2]}cpu_${PAR[3]}Miram_${PAR[6]}ch_${PAR[7]}filt_${PAR[5]}MHz_${PAR[4]}mm_${PAR[8]}_i
 
 #If run via symlink use anothe ssh connection to send e-mail
 if [ `basename $0` = "vivado_notify_fulcrum.sh" ]
@@ -49,12 +49,15 @@ function rename_mcs() {
     do
         sleep 10
     done
-    sleep 30
+    sleep 60
 
     mv mcs/chip_auto_i$1.mcs mcs/$MCS_CONF_NAME$1_$2.mcs
     if [ "$HOSTNAME" = "systech6" ]
     then
         scp mcs/$MCS_CONF_NAME$1_$2.mcs asic-tm:/home/vglazov/mcs_backup/
+    elif [ "$PROJECT_DIR" = "cpu_full_4175" ]
+    then
+        cp mcs/$MCS_CONF_NAME$1_$2.mcs ../mcs_backup/
     else
         cp mcs/$MCS_CONF_NAME$1_$2.mcs ../mcs_sitara/
     fi
@@ -83,6 +86,7 @@ then
             \r  end_step write_bitstream
             \r}
             \r
+            \rif {[regexp {^2016\.[12].*} [version -short]]} { set_param bitgen.maxThreads 1 }
             \rwrite_cfgmem -format mcs -interface bpix16 -size 1024 -loadbit \"up 0x0 $PWD/$WORK_PATH$arg/chip.bit\" -force -file \"$PWD/mcs/chip_auto_i$arg.mcs\"
             \r" >> $WORK_PATH$arg/chip.tcl
 
