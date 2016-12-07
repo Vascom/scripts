@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ ! "$USER" = "root" ]
+then
+    echo "Must be root"
+    exit 1
+fi
+
+add_params="--disable-gpu --disk-cache-dir=/tmp/cache"
+
+sed -ie "s|/chromium-browser|/chromium-browser $add_params|" /usr/share/applications/chromium-browser.desktop
+echo Done
+grep "/chromium-browser" /usr/share/applications/chromium-browser.desktop
