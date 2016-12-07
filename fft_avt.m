@@ -8,7 +8,7 @@
 %grep "^16:" minicom.cap | cut -d ":" -f2 | cut -d " " -f1,2 > f3
 %histc(a,[-3 -2 -1 0 1 2 3])/length(a)*100
 
-function [] = fft_avt (data_file, Fs, smpl, use_window, plot_color, test_mode)
+function [spectre_freq_points,spectre_data,plot_color] = fft_avt (data_file, Fs, smpl, use_window, plot_color, test_mode)
 
 if nargin < 6
     test_mode = 0;
@@ -50,23 +50,35 @@ FS_FAST = 150;
 %Low number - low Frequency resolution but more smoothnes of picture. Useful 9 to 14.
 %smpl = 14;
 
-%Enable Hann window for FFT
+%Enable window for FFT
+%0 - no window, 1 - Hann, 2 - Blackman
 %use_window = 1;
 
 %Color of FFT plot
 %plot_color = 'b';
 
 %Test mode
+%0 - normal mode, 1 - real test mode, 2 - complex test mode
 %test_mode = 0;
 %================================================
 
 if test_mode == 1
     f           = 1:2^20;
-    ssin        = sin(f);
+    ssin        = sin(f) + 0.1*cos(f/2);
     snoi        = normrnd(0,0.1,2^20,1);
     input_data  = ssin' + snoi;
     [nr,nc]     = size(input_data);
     cplx_mode   = 'real';
+elseif test_mode == 2
+    f           = 1:2^20;
+    ssin0       = (sin(f) + 0.1*cos(f/4));
+    ssin1       = (cos(f) + 0.1*sin(f/4));
+    snoi0       = normrnd(0,0.1,2^20,1);
+    snoi1       = normrnd(0,0.1,2^20,1);
+    input_data0 = [ssin0;ssin1]' + [snoi0 snoi1];
+    input_data  = complex(input_data0(:,1),input_data0(:,2));
+    [nr,nc]     = size(input_data0)
+    cplx_mode   = 'complex';
 else
     f_pre       = load(data_file);
     [nr,nc] = size(f_pre);
@@ -90,14 +102,16 @@ fprintf('FFT precision: %d Hz (smpl = %d); MAX %d Hz (smpl = %d)\n',Fs*1e6/fft_s
 
 %Use Hann window or not
 if use_window == 1
-    hann_coeffs = hann(fft_samples);
+    wind_coeffs = hann(fft_samples);
+elseif use_window == 2
+    wind_coeffs = blackman(fft_samples);
 else
-    hann_coeffs = ones(fft_samples,1);
+    wind_coeffs = ones(fft_samples,1);
 end
 
 %Compute separate FFT for each part
 for k=1:number_dia
-    fft_data_parts(k,:) = abs(fft(hann_coeffs.*input_data(1+fft_samples*(k-1):fft_samples*k)));
+    fft_data_parts(k,:) = abs(fft(wind_coeffs.*input_data(1+fft_samples*(k-1):fft_samples*k)));
 end
 
 %Sum samples from each part and make logarithm

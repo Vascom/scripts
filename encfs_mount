@@ -1,6 +1,22 @@
 #!/bin/bash
 
-secure_section_from="/home/vascom/yandex.disk/.secure/"
-secure_section_to="/home/vascom/secure"
+MY_PATH_FROM="/home/vascom/yandex.disk/.secure/"
+MY_PATH_TO="/home/vascom/secure"
+MY_LOCAL_PATH_FROM="/home/vascom/.secure_local/"
+MY_LOCAL_PATH_TO="/home/vascom/secure_local"
 
-encfs $secure_section_from $secure_section_to
+case "$1" in
+    "-u")   if [ "$2" = "local" ]
+            then
+                fusermount -u $MY_LOCAL_PATH_TO
+            else
+                fusermount -u $MY_PATH_TO
+            fi;;
+    "-m")   if [ "$2" = "local" ]
+            then
+                encfs $MY_LOCAL_PATH_FROM $MY_LOCAL_PATH_TO
+            else
+                encfs $MY_PATH_FROM $MY_PATH_TO
+            fi;;
+    *)      echo "Give -m for mount or -u for unmount."
+esac

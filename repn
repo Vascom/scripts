@@ -19,14 +19,14 @@ fi
 PAR=$1
 MAX=$2
 
-#cp $3 tmpr1.txt
-
 while [ $PAR -le $MAX ]
 do
-    sed s/NUM/_$PAR/g $3 > tmpr1.txt
+    sed "s/CLK_FOR_TESTNUM/CLK_FOR_TEST_$PAR/g" $3 > /tmp/tmpr1.txt
+    sed -i "s/parallelNUM/parallel_$PAR/g" /tmp/tmpr1.txt
+    sed -i "s/parallel_impNUM/parallel_imp_$PAR/g" /tmp/tmpr1.txt
+    sed -i "s/NUM/[$PAR]/g" /tmp/tmpr1.txt
     PAR=`expr $PAR + 1`
-    cat tmpr1.txt >> tmpr2.txt
+    cat /tmp/tmpr1.txt >> /tmp/tmpr2.txt
 done
-mv tmpr2.txt test.txt
-#sed s/__//g tmpr3.txt > test.txt
-rm tmpr1.txt
+mv /tmp/tmpr2.txt test.txt
+rm /tmp/tmpr1.txt

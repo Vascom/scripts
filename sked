@@ -1,20 +1,21 @@
 #!/bin/bash
 
 #http://www.eibispace.de/
-#http://www.eibispace.de/dx/bc-b14.txt
+#http://www.eibispace.de/dx/sked-b16.csv
 
 HHMM=`date -u | cut -d " " -f4 | cut -d ":" -f1,2 --output-delimiter=""`
 
-FILE_IN=`grep R "$1" | grep -E "RUS|EEu|EE" | grep -E -v "Volmet|DIGITAL|AutoRadioKlub" | sed -e 's/\ /_/g'`
+iconv -f utf-8 -t utf-8 -c "$1" > /tmp/radio_dx_base.txt
+DB_FILE="/tmp/radio_dx_base.txt"
+
+FILE_IN=`grep R "$DB_FILE" | grep -E "RUS|EEu|EE" | grep -E -v "Volmet|DIGITAL|AutoRadioKlub" | sed -e 's/\ /_/g'`
 
 echo "prosessing..."
 for one_string in `echo "$FILE_IN"`
 do
-    echo $one_string
     LANG=`echo "$one_string" | cut -d ";" -f6`
     if [ "$LANG" == "R" ]
     then
-        echo a
         TIME1=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f1`
         TIME2=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f2`
 
@@ -26,7 +27,7 @@ do
                 FREQ=`echo "$one_string" | cut -d ";" -f1`
                 NAME=`echo "$one_string" | cut -d ";" -f5`
                 DATES=`echo "$one_string" | cut -d ";" -f3`
-                echo "Freq: $FREQ; $NAME for $REGION, from $TIME1 to $TIME2 $f3"
+                echo -e "Freq: $FREQ; \t$REGION from $TIME1 to $TIME2 : $NAME"
             fi
         fi
     fi
