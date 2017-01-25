@@ -8,14 +8,18 @@
 %grep "^16:" minicom.cap | cut -d ":" -f2 | cut -d " " -f1,2 > f3
 %histc(a,[-3 -2 -1 0 1 2 3])/length(a)*100
 
-function [spectre_freq_points,spectre_data,plot_color] = fft_avt (data_file, Fs, smpl, use_window, plot_color, test_mode)
+function [spectre_freq_points,spectre_data,plot_color] = fft_avt (data_file, Fs, smpl, use_window, data_mode, plot_color, test_mode)
 
-if nargin < 6
+if nargin < 7
     test_mode = 0;
 end
 
-if nargin < 5
+if nargin < 6
     plot_color = 'b';
+end
+
+if nargin < 5
+    data_mode = 0;
 end
 
 if nargin < 4
@@ -24,6 +28,11 @@ end
 
 if nargin < 3
     error('Not enougth arguments');
+end
+
+%Check right data_mode
+if data_mode ~= 0 && data_mode ~= 1 && data_mode ~= 2
+    error('data_mode must be 0 or 1 or 2');
 end
 
 %Check if we in Octave or Matlab and load additional library for Octave
@@ -54,6 +63,10 @@ FS_FAST = 150;
 %0 - no window, 1 - Hann, 2 - Blackman
 %use_window = 1;
 
+%Take data from data_file in auto mode or only one column in real mode
+%Good values are 0 for auto, 1 for first column, 2 for second column
+%data_mode = 0
+
 %Color of FFT plot
 %plot_color = 'b';
 
@@ -82,12 +95,18 @@ elseif test_mode == 2
 else
     f_pre       = load(data_file);
     [nr,nc] = size(f_pre);
-    if nc == 1
-        input_data  = f_pre;
-        cplx_mode   = 'real';
+
+    if data_mode == 0
+        if nc == 1
+            input_data  = f_pre;
+            cplx_mode   = 'real';
+        else
+            input_data  = complex(f_pre(:,1),f_pre(:,2));
+            cplx_mode   = 'complex';
+        end
     else
-        input_data  = complex(f_pre(:,1),f_pre(:,2));
-        cplx_mode   = 'complex';
+        input_data  = f_pre(:,data_mode);
+        cplx_mode   = 'real';
     end
 end
 
@@ -123,7 +142,7 @@ if Fs > FS_FAST
     spectre_freq_points = (1:fft_samples_half)/fft_samples_half*Fs2+Fs2;
     spectre_data        = fft_data_sum_log(fft_samples_half+1:end);
 else
-    if nc == 1
+    if strcmp(cplx_mode,'real')
         spectre_freq_points = (1:fft_samples_half)/fft_samples_half*Fs2;
         spectre_data        = fft_data_sum_log(1:fft_samples_half);
     else
