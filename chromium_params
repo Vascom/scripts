@@ -6,8 +6,15 @@ then
     exit 1
 fi
 
+DESKTOP_FILE="/usr/share/applications/chromium-browser.desktop"
+
 add_params="--disable-gpu --disk-cache-dir=/tmp/cache"
 
-sed -ie "s|/chromium-browser|/chromium-browser $add_params|" /usr/share/applications/chromium-browser.desktop
-echo Done
-grep "/chromium-browser" /usr/share/applications/chromium-browser.desktop
+if [ ! `grep -q disable-gpu $DESKTOP_FILE` ]
+then
+    echo "Parameters already present"
+else
+    sed -ie "s|/chromium-browser|/chromium-browser $add_params|" $DESKTOP_FILE
+    echo Done
+fi
+grep "/chromium-browser" $DESKTOP_FILE
