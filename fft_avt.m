@@ -47,8 +47,9 @@ FS_FAST = 150;
 %================================================
 %Variables for change
 
-%Filename of input data
+%Input data filename or array
 %data_file = 'f0';
+%data_file = f0_array;
 %data must be in one or two (for complex mode) columns with " " (witespace) delimiter.
 %In Test mode enter 0.
 
@@ -93,7 +94,11 @@ elseif test_mode == 2
     [nr,nc]     = size(input_data0)
     cplx_mode   = 'complex';
 else
-    f_pre       = load(data_file);
+    if ischar(data_file)
+        f_pre   = load(data_file);
+    else
+        f_pre   = data_file;
+    end
     [nr,nc] = size(f_pre);
 
     if data_mode == 0

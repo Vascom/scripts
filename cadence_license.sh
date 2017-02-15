@@ -18,17 +18,19 @@ if [ -r ${INSTALL_DIR}/tools/bin/lmgrd ]; then
   rm -f /tmp/lockcdslmd
 
   if [ -r ${LOG_FILE} ]; then
-    time_stamp=`ls -ol ${LOG_FILE} | awk '{printf "%s.%d.%s\n",$5,$6,$7}'`
-    mv ${LOG_FILE} ${LOG_FILE}.$time_stamp
-    (echo "	Old debug log files in ${LOG_DIR}:")
-    ( ls -l ${LOG_FILE}.* )
+#     time_stamp=`ls -ol ${LOG_FILE} | awk '{printf "%s.%d.%s\n",$5,$6,$7}'`
+#     mv ${LOG_FILE} ${LOG_FILE}.$time_stamp
+    cat ${LOG_FILE} >> ${LOG_FILE}.old
+    rm ${LOG_FILE}
+    echo "Old debug log files in ${LOG_DIR}:"
+    ls -l ${LOG_FILE}.*
   fi
 
   # so boot can be run in the background and log file can be moved
   # while daemons are running
 
-  ( ${INSTALL_DIR}/tools/bin/lmgrd ${LMGRD_OPTS} -c ${LICENSE_FILE} \
-    2>&1 ) | ksh -c "while read line; do echo \"\$line\" >> ${LOG_FILE}; done" &
+  ${INSTALL_DIR}/tools/bin/lmgrd ${LMGRD_OPTS} -c ${LICENSE_FILE} \
+    2>&1 | ksh -c "while read line; do echo \"\$line\" >> ${LOG_FILE}; done" &
   sleep 2
 else
   echo ""

@@ -55,7 +55,7 @@ function rename_mcs() {
     if [ "$HOSTNAME" = "systech6" ]
     then
         scp mcs/$MCS_CONF_NAME$1_$2.mcs asic-tm:/home/vglazov/mcs_backup/
-    elif [ "$PROJECT_DIR" = "cpu_full_4175" ]
+    elif [ "$PROJECT_DIR" = "cpu_full_4175" -o "$PROJECT_DIR" = "cpu_full_nt" ]
     then
         cp mcs/$MCS_CONF_NAME$1_$2.mcs ../mcs_backup/
     else

@@ -10,7 +10,7 @@ DESKTOP_FILE="/usr/share/applications/chromium-browser.desktop"
 
 add_params="--disable-gpu --disk-cache-dir=/tmp/cache"
 
-if [ ! `grep -q disable-gpu $DESKTOP_FILE` ]
+if [ `grep -q disable-gpu $DESKTOP_FILE` ]
 then
     echo "Parameters already present"
 else
