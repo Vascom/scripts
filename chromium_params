@@ -1,20 +1,33 @@
 #!/bin/bash
 
-if [ ! "$USER" = "root" ]
-then
-    echo "Must be root"
-    exit 1
-fi
-
 DESKTOP_FILE="/usr/share/applications/chromium-browser.desktop"
-
 add_params="--disable-gpu --disk-cache-dir=/tmp/cache"
 
-if [ `grep -q disable-gpu $DESKTOP_FILE` ]
+function check_present() {
+    par_present=`grep -c disable-gpu $DESKTOP_FILE`
+
+    if [ "$1" == "0" ]
+    then
+        if [ $par_present == "0" ]
+        then
+            echo "Parameters are abcent"
+        else
+            echo "Parameters are present"
+        fi
+        grep "/chromium-browser" $DESKTOP_FILE
+    fi
+}
+
+if [ "$USER" != "root" ]
 then
-    echo "Parameters already present"
+    echo "Must be root"
+    check_present 0
 else
-    sed -ie "s|/chromium-browser|/chromium-browser $add_params|" $DESKTOP_FILE
-    echo Done
+    check_present 1
+    if [ $par_present == "0" ]
+    then
+        sed -i "s|/chromium-browser|/chromium-browser $add_params|" $DESKTOP_FILE
+        echo "Parameters are added"
+    fi
+    check_present 0
 fi
-grep "/chromium-browser" $DESKTOP_FILE
