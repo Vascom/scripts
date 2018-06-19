@@ -1,22 +1,23 @@
 #!/bin/bash
 
+#Reset color
+Color_Off='\e[0m'       # Text Reset
+
+#Colors
+Red='\e[0;31m'          # Red
+Green='\e[0;32m'        # Green
+
 MY_PATH_FROM="/home/vascom/yandex.disk/.secure/"
 MY_PATH_TO="/home/vascom/secure"
-MY_LOCAL_PATH_FROM="/home/vascom/.secure_local/"
-MY_LOCAL_PATH_TO="/home/vascom/secure_local"
 
 case "$1" in
-    "-u")   if [ "$2" = "local" ]
+    "-u")   fusermount -u $MY_PATH_TO
+            ;;
+    "-m")   if ! mount | grep $MY_PATH_TO 2>&1 > /dev/null
             then
-                fusermount -u $MY_LOCAL_PATH_TO
-            else
-                fusermount -u $MY_PATH_TO
-            fi;;
-    "-m")   if [ "$2" = "local" ]
-            then
-                encfs $MY_LOCAL_PATH_FROM $MY_LOCAL_PATH_TO
-            else
                 encfs $MY_PATH_FROM $MY_PATH_TO
+            else
+                echo "Directory already mounted."
             fi;;
-    *)      echo "Give -m for mount or -u for unmount."
+    *)      echo -e "Give ${Green}-m${Color_Off} for mount or ${Green}-u${Color_Off} for unmount."
 esac
