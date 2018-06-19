@@ -31,7 +31,7 @@ if [ "$2" = "test" ]
 then
     echo "Test only"
 else
-    sed -ie "s!..; //Set CPU Freq!${real_clk}; //Set CPU Freq!" $p0
+    sed -i "s!..; //Set CPU Freq!${real_clk}; //Set CPU Freq!" $p0
 
     for clk_wiz_file in $p1 $p2 $p3
     do
