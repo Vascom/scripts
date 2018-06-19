@@ -1,34 +1,56 @@
 #!/bin/bash
 
 #http://www.eibispace.de/
-#http://www.eibispace.de/dx/sked-b16.csv
+#http://www.eibispace.de/dx/sked-b17.csv
 
-HHMM=`date -u | cut -d " " -f4 | cut -d ":" -f1,2 --output-delimiter=""`
+if [ -z "$1" ]; then
+    echo "Please give data file."
+    exit 1
+fi
 
-iconv -f utf-8 -t utf-8 -c "$1" > /tmp/radio_dx_base.txt
-DB_FILE="/tmp/radio_dx_base.txt"
+if [ -n "$2" ]; then
+    HHMM="$2"
+else
+    HHMM=`date -u +%H%M`
+fi
 
-FILE_IN=`grep R "$DB_FILE" | grep -E "RUS|EEu|EE" | grep -E -v "Volmet|DIGITAL|AutoRadioKlub" | sed -e 's/\ /_/g'`
+case $(date -u +%u) in
+    1)  day="Mo";;
+    2)  day="Tu";;
+    3)  day="We";;
+    4)  day="Th";;
+    5)  day="Fr";;
+    6)  day="Sa";;
+    7)  day="Su";;
+esac
+
+FILE_IN=$(iconv -f utf-8 -t utf-8 -c "$1"| grep ";R;" | \
+#     grep -E "RUS|EEu" | \
+    grep -E -v "Volmet|DIGITAL|AutoRadioKlub|Aero|;FE;|;Sib;" | \
+    tr " " "_" | \
+    grep -E -v "Vesti_FM|IRiT_Weather_Radio|Russian_Spy_Numbers|Russian_Air_Force")
+# echo "$FILE_IN" | wc -l
 
 echo "prosessing..."
 for one_string in `echo "$FILE_IN"`
 do
-    LANG=`echo "$one_string" | cut -d ";" -f6`
-    if [ "$LANG" == "R" ]
-    then
-        TIME1=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f1`
-        TIME2=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f2`
+    TIME1=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f1`
+    TIME2=`echo "$one_string" | cut -d ";" -f2 | cut -d "-" -f2`
 
-        if [ "$HHMM" -ge "$TIME1" ] && [ "$HHMM" -le "$TIME2" ]
-        then
-            REGION=`echo "$one_string" | cut -d ";" -f7`
-            if [ "$REGION" == "RUS" ] || [ "$REGION" == "EEu" ] || [ "$REGION" == "EE" ]
-            then
+    if [ "$HHMM" -ge "$TIME1" ] && [ "$HHMM" -le "$TIME2" ]
+    then
+        REGION=`echo "$one_string" | cut -d ";" -f7`
+        LANGUAGE=`echo "$one_string" | cut -d ";" -f6`
+#         if [ "$REGION" == "RUS" ] || [ "$REGION" == "EEu" ]
+#         then
+            DATES=`echo "$one_string" | cut -d ";" -f3`
+            date_normal=$(echo "$DATES" | grep -E "Mo|Tu|We|Th|Fr|Sa|Su" -c)
+            date_present=$(echo "$DATES" | grep "$day" -c)
+            if [ $date_normal -eq 0 ] || [ $date_present -gt 0 ]; then
                 FREQ=`echo "$one_string" | cut -d ";" -f1`
                 NAME=`echo "$one_string" | cut -d ";" -f5`
-                DATES=`echo "$one_string" | cut -d ";" -f3`
-                echo -e "Freq: $FREQ; \t$REGION from $TIME1 to $TIME2 : $NAME"
+                echo -e "Freq: $FREQ; \t$REGION from $TIME1 to $TIME2 $DATES : $NAME $LANGUAGE"
             fi
-        fi
+#         fi
     fi
 done
