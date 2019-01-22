@@ -1,0 +1,56 @@
+#/bin/bash
+
+temp_file="/tmp/bd_work_data"
+holiday_file="/home/vascom/.bd_holiday_data"
+dates_db_file="/home/vascom/.dates_db"
+
+today=`LANG=C date +%B\ %d`
+day_num=`date +%j`
+curl -s http://att/SitePages/Home.aspx | grep "$today" > "$temp_file"
+# fullday=`date +%Y%m%d`
+# daytype=`curl -s https://isdayoff.ru/$fullday`
+daytype=`grep $day_num "$dates_db_file" | cut -d " " -f2`
+
+# Check holiday or not
+if [ "$daytype" == "1" ]; then
+    cat "$temp_file" >> "$holiday_file"
+else
+    if [ -e "$holiday_file" ]; then
+        cat "$holiday_file" >> "$temp_file"
+        echo -n > "$holiday_file"
+    fi
+fi
+
+# Read data and send emails
+while read -r man; do
+    name=`echo "$man" | cut -d ">" -f2 | cut -d "<" -f1`
+    photo=`echo "$man" | sed -e "s|^.*img src='||"  | cut -d "'" -f1`
+    photo_name=`basename "$photo"`
+    realday=`echo "$man" | cut -d ">" -f4 | cut -d "<" -f1`
+    wget -q $photo -O /tmp/$photo_name
+
+#     echo "$name $photo"
+    if [ -n "$1" ]; then
+        echo "$today $name" | mutt -x -s "$realday $name birthday" -a /tmp/$photo_name -- vascom2@gmail.com
+    else
+        echo "$realday $name $today"
+    fi
+done < "$temp_file"
+
+exit 0
+
+# Filling days_database file
+temp_db="/tmp/dates_db"
+year=2019
+
+for month in `seq -w 1 12`
+do
+    for day in `seq -w 1 31`
+    do
+        test_day=`date -d $year-$month-$day +%j`
+        echo -n "$test_day " >> "$temp_db"
+        curl -s https://isdayoff.ru/$year$month$day >> "$temp_db"
+        echo >> "$temp_db"
+    done
+done
+sed -i '/^ 100/d' "$temp_db"
