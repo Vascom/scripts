@@ -1,25 +1,13 @@
 #!/bin/bash
 
-# function parallel() {
-#     sleep "$1"
-#     echo p$2
-#     exit "$2"
-# }
-# 
-# 
-# parallel 3 1 &
-# parallel 6 2 &
-# wait
-# echo end
-
-#exit
+detecting="GGA|GPGSV|GLGSV"
 
 if [ -z "$1" -o -z "$2" ]
 then
     echo "Format isn't correct!"
     echo "Use:"
     echo "enmea input_file output_filename [show_progress]"
-    exit
+    exit 1
 fi
 
 if [ -e "$2" ]
@@ -76,8 +64,8 @@ echo "Using $THREADS processors"
 #echo "$FILE_IN" | head
 #exit 0
 
-grep -E "GGA|GSV" $IN_FILE_LIST  | cut -d "*" -f1 | sed 's/,08,/,8,/g' | sed 's/,09,/,9,/g' > /tmp/nmea
-pushd /tmp
+grep -E "$detecting" $IN_FILE_LIST  | cut -d "*" -f1 | sed 's/,08,/,8,/g' | sed 's/,09,/,9,/g' | sed 's/,09[1-9],/,9,/g' > /tmp/nmea
+pushd /tmp > /dev/null
     string_count=`wc -l nmea | awk '{print $1}'`
     strings_in_file=`expr $string_count / $THREADS`
     split nmea -d -l $strings_in_file
@@ -85,7 +73,7 @@ pushd /tmp
     string_overhead_1=`expr $string_overhead_0 - 1`
     head -n $string_overhead_1 x01 >> x00
     tail -n +$string_overhead_0 x01 > x01_tmp
-popd
+popd > /dev/null
 
 
 rm -f "$2"
@@ -108,7 +96,7 @@ rm -f "$2"
 
 function part_processing() {
     local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-    local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+#     local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
     rm -f "$2"
     local navmes
     local message_time
@@ -119,16 +107,16 @@ function part_processing() {
     local sv_number
 
     local total_GGA=`grep -c GGA "$1"`
-    local FILE_IN=`grep -E "GGA|GSV" $1  | cut -d "*" -f1`
+    local FILE_IN=`grep -E "$detecting" $1  | cut -d "*" -f1`
     #echo "$FILE_IN" | tail
+#     dbg_i=0
     for one_string in `echo "$FILE_IN"`
     do
     #echo $one_string
     #awk '{print $1}'  | sed 's/,/\ /g'
         #one_string=`echo "$one_string"`
         navmes=`echo "$one_string" | cut -d "," -f1 `
-        if [ "$navmes" == "\$GPGGA" ]
-        then
+        if [ "$navmes" == "\$GPGGA" ]; then
             sat_v[0]=$message_time
             echo "${sat_v[@]} $hdop" >> "$2"
 
@@ -145,8 +133,7 @@ function part_processing() {
             #GPS_QUALITY=`echo "$one_string" | cut -d "," -f7`
             #TOTAL_SATELLITES=`echo "$one_string" | cut -d "," -f8`
             hdop=`echo "$one_string" | cut -d "," -f9`
-            if [ -z "$hdop" ]
-            then
+            if [ -z "$hdop" ]; then
                 hdop=0
             fi
             #ALTITUDE=`echo "$one_string" | cut -d "," -f10`
@@ -164,8 +151,7 @@ function part_processing() {
 #             then
 #                 echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
 #             fi
-        elif [ "$navmes" == "\$GPGSV" ] || [ "$navmes" == "\$GLGSV" ]
-        then
+        elif [ "$navmes" == "\$GPGSV" ] || [ "$navmes" == "\$GLGSV" ]; then
 #             total_messages=`echo "$one_string" | cut -d "," -f2`
 #             message_number=`echo "$one_string" | cut -d "," -f3`
 #             TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
@@ -173,35 +159,30 @@ function part_processing() {
 #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
             sv_number=`echo "$one_string" | cut -d "," -f5`
             sat_v_pre=`echo "$one_string" | cut -d "," -f8`
-            if [ -n "$sat_v_pre" ]
-            then
+            if [ -n "$sat_v_pre" ]; then
                 sat_v[$sv_number]=$sat_v_pre
             fi
 
             sv_number=`echo "$one_string" | cut -d "," -f9`
-            if [ -n "$sv_number" ]
-            then
+            if [ -n "$sv_number" ]; then
                 sat_v_pre=`echo "$one_string" | cut -d "," -f12`
-                if [ -n "$sat_v_pre" ]
-                then
+                if [ -n "$sat_v_pre" ]; then
                     sat_v[$sv_number]=$sat_v_pre
                 fi
 
                 sv_number=`echo "$one_string" | cut -d "," -f13`
-                if [ -n "$sv_number" ]
-                then
+                if [ -n "$sv_number" ]; then
                     sat_v_pre=`echo "$one_string" | cut -d "," -f16`
-                    if [ -n "$sat_v_pre" ]
-                    then
+                    if [ -n "$sat_v_pre" ]; then
+#                         echo $dbg_i $sv_number
+#                         echo $one_string
                         sat_v[$sv_number]=$sat_v_pre
                     fi
 
                     sv_number=`echo "$one_string" | cut -d "," -f17`
-                    if [ -n "$sv_number" ]
-                    then
+                    if [ -n "$sv_number" ]; then
                         sat_v_pre=`echo "$one_string" | cut -d "," -f20`
-                        if [ -n "$sat_v_pre" ]
-                        then
+                        if [ -n "$sat_v_pre" ]; then
                             sat_v[$sv_number]=$sat_v_pre
                         fi
                     fi
@@ -220,9 +201,9 @@ function part_processing() {
             #echo "Unknown Navigation message"
             #$unknown_decode_counter=`expr $unknown_decode_counter + 1`
         fi
+#     dbg_i=`expr $dbg_i + 1`
     done
-    if [ -n "$3" ]
-    then
+    if [ -n "$3" ]; then
         echo -e "GGA: $GGA_decode_counter of $total_GGA "
     fi
 }
@@ -234,13 +215,12 @@ tail -n +2 /tmp/nmea_decode_0 > /tmp/nmea_decode_00
 tail -n +2 /tmp/nmea_decode_1 > /tmp/nmea_decode_11
 cat /tmp/nmea_decode_00 /tmp/nmea_decode_11 > "$2"
 #echo -e "\nGSV: $GSV_decode_counter"
-if [ -n "$3" ]
-then
+if [ -n "$3" ]; then
     echo -ne "GGA: $GGA_decode_counter of $total_GGA"
 fi
 #echo -e "\nUnknown: $unknown_decode_counter"
 
-echo -en "Detected all satellites numbers: "
+echo -en "Detected satellites numbers: "
 for ((k=2; k < 98 ; k++))
 do
     check0=0
@@ -248,17 +228,14 @@ do
     st=`cut "$2" -d " " -f$k`
     for one_string in $st
     do
-        if [ $one_string -ne "0" ]
-        then
+        if [ $one_string -ne "0" ]; then
             check1=1
         else
             check0=1
         fi
     done
-    if [ $check1 -eq "1" ]
-    then
-        if [ $check0 -eq "1" ]
-        then
+    if [ $check1 -eq "1" ]; then
+        if [ $check0 -eq "1" ]; then
             echo -en "\e[31m`expr $k - 1`\e[0m "
         else
             echo -en "\e[32m`expr $k - 1`\e[0m "
