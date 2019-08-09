@@ -1,0 +1,78 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+    echo "Format isn't correct!"
+    echo "Use:"
+    echo "enmea_gs input_file"
+    exit 1
+fi
+
+detecting="GPSVST"
+max_signals=6
+first_sv_n=1
+last_sv_n=32
+
+tt_base=$(basename $1 | cut -d "." -f1)
+tt2=$(cat $1 | cut -d "@" -f1)
+all_count=$(echo "$tt2" | wc -l)
+
+rm ${tt_base}_sv[1-6]
+declare -a sv_snr
+declare -a sv_table
+
+for i in $(seq 1 $max_signals); do
+    sv_snr[$i]=0
+done
+
+for i in $(seq $first_sv_n $last_sv_n); do
+    for j in $(seq 1 $max_signals); do
+        sv_table[$((i*10+j))]=0
+    done
+done
+
+function snrs() {
+    sv_snr[1]=$1
+    sv_snr[2]=$2
+    sv_snr[3]=$3
+    sv_snr[4]=$4
+    sv_snr[5]=$5
+    sv_snr[6]=$6
+}
+
+counter=1
+for one_string in $(echo "$tt2" | grep $detecting | sed 's/08/8/g' | sed 's/09/9/g'); do
+    echo -ne "\r$counter/$all_count"
+    total=$(echo $one_string | cut -d "," -f3)
+    total=$((total*2))
+    for i in $(seq 2 2 $total); do
+        # Parse string
+        i_2=$((i+1))
+        sv_d0=$(echo $one_string | cut -d "{" -f${i},${i_2})
+        sv_n=$(echo $sv_d0 | cut -d "," -f1)
+        sv_d1=$(echo $sv_d0 | cut -d "{" -f2 | cut -d "}" -f1 | tr "," " ")
+
+        # Put SNR values serially in small array
+        snrs $sv_d1
+        for j in $(seq 1 $max_signals); do
+            if [ -z ${sv_snr[$j]} ]; then
+                sv_snr[$j]=0
+            fi
+        done
+
+        # Put SNR values to SV array
+        for j in $(seq 1 $max_signals); do
+            sv_table[$((sv_n*10+j))]=${sv_snr[j]}
+        done
+    done
+
+    # Output to the file
+    for j in $(seq 1 $max_signals); do
+        for i in $(seq $first_sv_n $last_sv_n); do
+            echo -n "${sv_table[$((i*10+j))]} " >> ${tt_base}_sv$j
+        done
+        echo "" >> ${tt_base}_sv$j
+    done
+    counter=$((counter+1))
+done
+echo ""
