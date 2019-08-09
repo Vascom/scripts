@@ -25,29 +25,17 @@ then
     esac
 fi
 
+max_sat_num=96
+
 IN_FILE_LIST=$1
 GGA_decode_counter=0
 GSV_decode_counter=0
 unknown_decode_counter=0
-sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
 start_work=0
 
 total_GGA=`grep -c GGA "$1"`
 # message_time_PRE=`cat $IN_FILE_LIST | grep GPGGA -m 1 | cut -d "," -f2 | cut -d "." -f1`
 # message_time=`expr $message_time_PRE - 1`
-
-function number_check() {
-    local nc
-    if [ -z "$1" ]
-    then
-        nc=0
-        echo "BAD"
-    else
-        nc=$1
-    fi
-    echo $nc
-}
 
 if [[ -z "$4" || $4 == 0 ]]
 then
@@ -75,28 +63,28 @@ pushd /tmp > /dev/null
     tail -n +$string_overhead_0 x01 > x01_tmp
 popd > /dev/null
 
-
 rm -f "$2"
 
-# function write_sat() {
-# #     echo "$one_string"
-#     local sv_number=`echo "$one_string" | cut -d "," -f$1`
-#     if [ -n "$sv_number" ]
-#     then
-#         local sat_v_pre=`echo "$one_string" | cut -d "," -f$2`
-#         echo $sv_number $sat_v_pre
-#         if [ -z $sat_v_pre ]
-#         then
-# #             echo $sv_number $sat_v_pre
-#             sat_v[$sv_number]=$sat_v_pre
-# #             echo ${sat_v[$sv_number]}
-#         fi
-#     fi
-# }
+function snrs() {
+    if [ -n $2 ] && [ ! $2 == T ]; then
+        sat_v[$1]=$2
+    fi
+    if [ -n $4 ] && [ ! $4 == T ]; then
+        sat_v[$3]=$4
+    fi
+    if [ -n $6 ] && [ ! $6 == T ]; then
+        sat_v[$5]=$6
+    fi
+    if [ -n $8 ] && [ ! $8 == T ]; then
+        sat_v[$7]=$8
+    fi
+}
 
 function part_processing() {
-    local sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-#     local sat_v_notnull=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
+    local sat_v=( 0 0 )
+    for i in $(seq 1 $max_sat_num); do
+        sat_v[$i]=0
+    done
     rm -f "$2"
     local navmes
     local message_time
@@ -145,8 +133,9 @@ function part_processing() {
             #message_time=`echo "$one_string" | cut -d "," -f16`
             GGA_decode_counter=`expr $GGA_decode_counter + 1`
             #sat_v contain 33 vars: message_time + 32 satellites
-            sat_v=( 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 )
-
+            for i in $(seq 1 $max_sat_num); do
+                sat_v[$i]=0
+            done
 #             if [ -z "$3" ]
 #             then
 #                 echo -ne "\rGGA: $GGA_decode_counter of $total_GGA"
@@ -157,44 +146,9 @@ function part_processing() {
 #             TOTAL_SV=`echo "$one_string" | cut -d "," -f4`
 #             ELEVATION[$M]=`echo "$one_string" | cut -d "," -f${FF[1]}`
 #             AZIMUTH[$M]=`echo "$one_string" | cut -d "," -f${FF[2]}`
-            sv_number=`echo "$one_string" | cut -d "," -f5`
-            sat_v_pre=`echo "$one_string" | cut -d "," -f8`
-            if [ -n "$sat_v_pre" ]; then
-                sat_v[$sv_number]=$sat_v_pre
-            fi
-
-            sv_number=`echo "$one_string" | cut -d "," -f9`
-            if [ -n "$sv_number" ]; then
-                sat_v_pre=`echo "$one_string" | cut -d "," -f12`
-                if [ -n "$sat_v_pre" ]; then
-                    sat_v[$sv_number]=$sat_v_pre
-                fi
-
-                sv_number=`echo "$one_string" | cut -d "," -f13`
-                if [ -n "$sv_number" ]; then
-                    sat_v_pre=`echo "$one_string" | cut -d "," -f16`
-                    if [ -n "$sat_v_pre" ]; then
-#                         echo $dbg_i $sv_number
-#                         echo $one_string
-                        sat_v[$sv_number]=$sat_v_pre
-                    fi
-
-                    sv_number=`echo "$one_string" | cut -d "," -f17`
-                    if [ -n "$sv_number" ]; then
-                        sat_v_pre=`echo "$one_string" | cut -d "," -f20`
-                        if [ -n "$sat_v_pre" ]; then
-                            sat_v[$sv_number]=$sat_v_pre
-                        fi
-                    fi
-                fi
-            fi
-
-#             if [ "$total_messages" == "$message_number" ]
-#             then
-#                 sat_v[0]=$message_time
-#                 echo "${sat_v[@]} $hdop" >> "$2"
-#             fi
-
+            sv_in_string=$(echo "$one_string" | cut -d "*" -f1 | sed 's|,,|,T,|g' | sed 's|,\*|,T,|g' \
+                | cut -d "," -f5,8,9,12,13,16,17,20 | tr "," " ")
+            snrs $sv_in_string
             #GSV_decode_counter=`expr $GSV_decode_counter + 1`
         else
             echo -n ""
