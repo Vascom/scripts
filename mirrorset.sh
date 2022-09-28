@@ -25,6 +25,25 @@ function repo_url_replace(){
         exit 1
     fi
 
+    if [ "$action" = "devset" ] || [ "$action" = "devunset" ]
+    then
+        if [ "$action" = "devset" ]
+        then
+            start="releases"
+            end="development"
+        elif [ "$action" = "devunset" ]
+        then
+            start="development"
+            end="releases"
+        fi
+
+        for repo in $1
+        do
+            sed -i "s|$start|$end|" /etc/yum.repos.d/$repo.repo
+        done
+        break
+    fi
+
     local pre_mirror=$2
     local mirror=$3
     local pre_meta=$meta0
@@ -53,6 +72,8 @@ function repo_url_replace(){
 case "$1" in
     "set")      action="set";;
     "unset")    action="unset";;
+    "devset")   action="devset";;
+    "devunset") action="devunset";;
     *)          echo -e "Use:
                 \r  set     Set new URL as baseurl.
                 \r  unset   Set mirrorlist as default."
